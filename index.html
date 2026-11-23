@@ -6,116 +6,277 @@
   <title>LAST//ALIVE — Only one makes it out.</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <div id="app">
-    <div class="scanlines"></div>
+<div id="app">
 
-    <header>
-      <div class="logo">LAST<span>//</span>ALIVE</div>
-      <div class="status"><i></i> ONLINE</div>
-    </header>
+  <div class="scanlines"></div>
 
-    <main>
-      <section id="home" class="screen active">
-        <div class="hero">
-          <p class="eyebrow">MULTIPLAYER SURVIVAL ARENA</p>
-          <h1>ONLY ONE<br><span>MAKES IT OUT.</span></h1>
-          <p class="sub">Dodge. Survive. Betray your friends. Be the last player standing.</p>
+  <header>
+    <div class="logo">LAST<span>//</span>ALIVE</div>
+    <div class="status"><i></i> ONLINE</div>
+  </header>
 
-          <div class="cards">
-            <div class="card">
-              <b>01</b><strong>CREATE</strong><small>Make a private room.</small>
-            </div>
-            <div class="card">
-              <b>02</b><strong>INVITE</strong><small>Send your room code.</small>
-            </div>
-            <div class="card">
-              <b>03</b><strong>SURVIVE</strong><small>Last player alive wins.</small>
-            </div>
+  <main>
+
+    <!-- HOME -->
+    <section id="home" class="screen active">
+      <div class="hero">
+
+        <p class="eyebrow">MULTIPLAYER SURVIVAL ARENA</p>
+
+        <h1>
+          ONLY ONE<br>
+          <span>MAKES IT OUT.</span>
+        </h1>
+
+        <p class="sub">
+          Dodge. Survive. Betray your friends.
+          Be the last player standing.
+        </p>
+
+        <div class="cards">
+          <div class="card">
+            <b>01</b>
+            <strong>CREATE</strong>
+            <small>Make a private room.</small>
           </div>
 
-          <div class="home-actions">
-            <button id="createBtn" class="primary">CREATE ROOM <span>→</span></button>
-            <div class="join-row">
-              <input id="joinCode" maxlength="6" placeholder="ROOM CODE">
-              <button id="joinBtn">JOIN</button>
-            </div>
-          </div>
-          <p id="homeError" class="error"></p>
-        </div>
-      </section>
-
-      <section id="lobby" class="screen">
-        <div class="panel lobby-panel">
-          <div class="topline">
-            <div>
-              <p class="eyebrow">PRIVATE ARENA</p>
-              <h2>LOBBY</h2>
-            </div>
-            <div class="room-box">
-              <small>ROOM CODE</small>
-              <strong id="roomCode">------</strong>
-              <button id="copyCode">COPY</button>
-            </div>
+          <div class="card">
+            <b>02</b>
+            <strong>INVITE</strong>
+            <small>Send your room code.</small>
           </div>
 
-          <div class="name-row">
-            <input id="playerName" maxlength="14" placeholder="YOUR NAME">
-            <button id="setName">SET NAME</button>
-          </div>
-
-          <div class="players-head">
-            <span>PLAYERS</span><span id="playerCount">1 / 8</span>
-          </div>
-          <div id="playerList" class="player-list"></div>
-
-          <div class="lobby-bottom">
-            <p id="lobbyHint">Share the code with your friends.</p>
-            <button id="startBtn" class="primary" disabled>START GAME →</button>
-          </div>
-          <p id="lobbyError" class="error"></p>
-        </div>
-      </section>
-
-      <section id="game" class="screen">
-        <div class="game-hud">
-          <div><span>ROUND</span><b id="roundNo">01</b></div>
-          <div class="timer"><span>TIME</span><b id="timer">30.0</b></div>
-          <div><span>ALIVE</span><b id="aliveCount">1</b></div>
-        </div>
-
-        <div id="arena" class="arena">
-          <div class="arena-grid"></div>
-          <div id="hazards"></div>
-          <div id="players"></div>
-          <div class="arena-message" id="arenaMessage">SURVIVE</div>
-        </div>
-
-        <div class="controls">
-          <div class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div>
-          <p>MOVE</p>
-          <button id="leaveGame">LEAVE</button>
-        </div>
-      </section>
-
-      <section id="result" class="screen">
-        <div class="result-panel">
-          <p class="eyebrow">ROUND COMPLETE</p>
-          <h2 id="winnerTitle">PLAYER WINS</h2>
-          <p id="winnerSub">Only one made it out.</p>
-          <div id="finalScores" class="scores"></div>
-          <div class="result-actions">
-            <button id="rematchBtn" class="primary">REMATCH →</button>
-            <button id="homeBtn">MAIN MENU</button>
+          <div class="card">
+            <b>03</b>
+            <strong>SURVIVE</strong>
+            <small>Last player alive wins.</small>
           </div>
         </div>
-      </section>
-    </main>
 
-    <footer>LAST//ALIVE · WEBRTC MULTIPLAYER · 2–8 PLAYERS</footer>
-  </div>
+        <div class="home-actions">
 
-  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-  <script src="script.js"></script>
+          <button id="createBtn" class="primary">
+            CREATE ROOM <span>→</span>
+          </button>
+
+          <div class="join-row">
+            <input
+              id="joinCode"
+              maxlength="6"
+              placeholder="ROOM CODE"
+              autocomplete="off"
+            >
+
+            <button id="joinBtn">
+              JOIN
+            </button>
+          </div>
+
+        </div>
+
+        <p id="homeError" class="error"></p>
+
+      </div>
+    </section>
+
+
+    <!-- LOBBY -->
+    <section id="lobby" class="screen">
+
+      <div class="panel lobby-panel">
+
+        <div class="topline">
+
+          <div>
+            <p class="eyebrow">PRIVATE ARENA</p>
+            <h2>LOBBY</h2>
+          </div>
+
+          <div class="room-box">
+            <small>ROOM CODE</small>
+
+            <strong id="roomCode">
+              ------
+            </strong>
+
+            <button id="copyCode">
+              COPY
+            </button>
+          </div>
+
+        </div>
+
+
+        <div class="name-row">
+
+          <input
+            id="playerName"
+            maxlength="14"
+            placeholder="YOUR NAME"
+            autocomplete="off"
+          >
+
+          <button id="setName">
+            SET NAME
+          </button>
+
+        </div>
+
+
+        <div class="players-head">
+          <span>PLAYERS</span>
+          <span id="playerCount">1 / 8</span>
+        </div>
+
+
+        <div
+          id="playerList"
+          class="player-list"
+        ></div>
+
+
+        <div class="lobby-bottom">
+
+          <p id="lobbyHint">
+            Share the code with your friends.
+          </p>
+
+          <button
+            id="startBtn"
+            class="primary"
+            disabled
+          >
+            START GAME →
+          </button>
+
+        </div>
+
+        <p id="lobbyError" class="error"></p>
+
+      </div>
+
+    </section>
+
+
+    <!-- GAME -->
+    <section id="game" class="screen">
+
+      <div class="game-hud">
+
+        <div>
+          <span>ROUND</span>
+          <b id="roundNo">01</b>
+        </div>
+
+        <div class="timer">
+          <span>TIME</span>
+          <b id="timer">30.0</b>
+        </div>
+
+        <div>
+          <span>ALIVE</span>
+          <b id="aliveCount">1</b>
+        </div>
+
+      </div>
+
+
+      <div id="arena" class="arena">
+
+        <div class="arena-grid"></div>
+
+        <div id="hazards"></div>
+
+        <div id="players"></div>
+
+        <div
+          class="arena-message"
+          id="arenaMessage"
+        >
+          SURVIVE
+        </div>
+
+      </div>
+
+
+      <div class="controls">
+
+        <div class="keys">
+          <kbd>W</kbd>
+          <kbd>A</kbd>
+          <kbd>S</kbd>
+          <kbd>D</kbd>
+        </div>
+
+        <p>MOVE</p>
+
+        <button id="leaveGame">
+          LEAVE
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- RESULT -->
+    <section id="result" class="screen">
+
+      <div class="result-panel">
+
+        <p class="eyebrow">
+          ROUND COMPLETE
+        </p>
+
+        <h2 id="winnerTitle">
+          PLAYER WINS
+        </h2>
+
+        <p id="winnerSub">
+          Only one made it out.
+        </p>
+
+        <div
+          id="finalScores"
+          class="scores"
+        ></div>
+
+        <div class="result-actions">
+
+          <button
+            id="rematchBtn"
+            class="primary"
+          >
+            REMATCH →
+          </button>
+
+          <button id="homeBtn">
+            MAIN MENU
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <footer>
+    LAST//ALIVE · WEBRTC MULTIPLAYER · 2–8 PLAYERS
+  </footer>
+
+</div>
+
+
+<!-- PEERJS -->
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
+<!-- GAME -->
+<script src="script.js"></script>
+
 </body>
 </html>
