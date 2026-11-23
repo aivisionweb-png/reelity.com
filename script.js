@@ -1,11 +1,11 @@
-// LAST//ALIVE — FIXED MULTIPLAYER
-
 document.addEventListener("DOMContentLoaded", () => {
-  const $ = (id) => document.getElementById(id);
+
+  const $ = id => document.getElementById(id);
 
   // =========================
-  // ELEMENTS — MATCHES HTML
+  // ELEMENTS
   // =========================
+
   const home = $("home");
   const lobby = $("lobby");
   const game = $("game");
@@ -22,6 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const playerName = $("playerName");
   const setName = $("setName");
+
   const playerList = $("playerList");
   const playerCount = $("playerCount");
 
@@ -37,8 +38,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const aliveCount = $("aliveCount");
   const roundNo = $("roundNo");
 
-  const arenaMessage = $("arenaMessage");
-
   const winnerTitle = $("winnerTitle");
   const winnerSub = $("winnerSub");
   const finalScores = $("finalScores");
@@ -47,28 +46,37 @@ document.addEventListener("DOMContentLoaded", () => {
   const homeBtn = $("homeBtn");
   const leaveGame = $("leaveGame");
 
+
   // =========================
   // STATE
   // =========================
+
   const MAX_PLAYERS = 8;
+  const GAME_TIME = 30;
 
   let peer = null;
+
   let isHost = false;
 
   let myId = "";
   let myName = "PLAYER";
+
   let room = "";
 
   let players = {};
+
   let connections = new Map();
 
   let hazards = [];
 
   let running = false;
+
   let round = 0;
-  let timeLeft = 30;
+
+  let timeLeft = GAME_TIME;
 
   let gameTimer = null;
+
 
   const keys = {
     w: false,
@@ -76,6 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
     s: false,
     d: false
   };
+
 
   const colors = [
     "#54b8ff",
@@ -88,128 +97,209 @@ document.addEventListener("DOMContentLoaded", () => {
     "#facc15"
   ];
 
+
   // =========================
   // SCREEN
   // =========================
-  function show(screen) {
-    [home, lobby, game, result].forEach((s) => {
-      if (s) s.classList.remove("active");
-    });
 
-    if (screen) screen.classList.add("active");
+  function showScreen(screen) {
+
+    document
+      .querySelectorAll(".screen")
+      .forEach(s =>
+        s.classList.remove("active")
+      );
+
+    screen.classList.add("active");
   }
 
-  function error(el, message) {
-    if (el) el.textContent = message || "";
-  }
 
   // =========================
   // ROOM CODE
   // =========================
+
   function generateRoomCode() {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+    const chars =
+      "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
     let code = "";
 
     for (let i = 0; i < 6; i++) {
-      code += chars[Math.floor(Math.random() * chars.length)];
+
+      code +=
+        chars[
+          Math.floor(
+            Math.random() *
+            chars.length
+          )
+        ];
+
     }
 
     return code;
   }
 
-  // =========================
-  // PEER CREATION
-  // =========================
-  function createPeer(id = undefined) {
-    return new Promise((resolve, reject) => {
-      let p;
-
-      try {
-        if (id) {
-          p = new Peer(id, {
-            debug: 1
-          });
-        } else {
-          p = new Peer({
-            debug: 1
-          });
-        }
-      } catch (e) {
-        reject(e);
-        return;
-      }
-
-      let settled = false;
-
-      p.on("open", (peerId) => {
-        if (settled) return;
-
-        settled = true;
-
-        console.log("PEER OPEN:", peerId);
-
-        resolve(p);
-      });
-
-      p.on("error", (err) => {
-        console.error("PEER ERROR:", err);
-
-        if (!settled) {
-          settled = true;
-          reject(err);
-        }
-      });
-    });
-  }
 
   // =========================
   // PLAYER
   // =========================
-  function createPlayer(id, name, host = false) {
+
+  function createPlayer(
+    id,
+    name,
+    host = false
+  ) {
+
     return {
+
       id,
-      name: name || "PLAYER",
+
+      name:
+        name ||
+        "PLAYER",
+
       host,
 
-      x: Math.random() * 80 + 10,
-      y: Math.random() * 70 + 15,
+      x:
+        Math.random() * 80 + 10,
+
+      y:
+        Math.random() * 70 + 15,
 
       alive: true,
+
       score: 0
+
     };
+
   }
+
+
+  // =========================
+  // CREATE PEER
+  // =========================
+
+  function createPeer(id = null) {
+
+    return new Promise(
+      (resolve, reject) => {
+
+        let p;
+
+        try {
+
+          if (id) {
+
+            p = new Peer(id, {
+              debug: 1
+            });
+
+          } else {
+
+            p = new Peer({
+              debug: 1
+            });
+
+          }
+
+        } catch (err) {
+
+          reject(err);
+
+          return;
+
+        }
+
+
+        let done = false;
+
+
+        p.on("open", peerId => {
+
+          if (done) return;
+
+          done = true;
+
+          console.log(
+            "Peer opened:",
+            peerId
+          );
+
+          resolve(p);
+
+        });
+
+
+        p.on("error", err => {
+
+          console.error(
+            "Peer error:",
+            err
+          );
+
+          if (!done) {
+
+            done = true;
+
+            reject(err);
+
+          }
+
+        });
+
+      }
+    );
+
+  }
+
 
   // =========================
   // CREATE ROOM
   // =========================
+
   async function createRoom() {
-    error(homeError, "");
+
+    homeError.textContent = "";
 
     createBtn.disabled = true;
-    createBtn.textContent = "CREATING...";
+
+    createBtn.textContent =
+      "CREATING...";
+
 
     try {
+
       isHost = true;
 
-      room = generateRoomCode();
+      room =
+        generateRoomCode();
 
-      console.log("Creating room:", room);
 
-      peer = await createPeer(
-        "lastalive-" + room.toLowerCase()
-      );
+      peer =
+        await createPeer(
+          "lastalive-" +
+          room.toLowerCase()
+        );
 
-      myId = peer.id;
+
+      myId =
+        peer.id;
+
 
       const enteredName =
         playerName.value.trim();
 
+
       myName =
-        (enteredName || "HOST")
-          .slice(0, 14);
+        (
+          enteredName ||
+          "HOST"
+        ).slice(0, 14);
+
 
       players = {};
+
 
       players[myId] =
         createPlayer(
@@ -218,90 +308,113 @@ document.addEventListener("DOMContentLoaded", () => {
           true
         );
 
-      roomCode.textContent = room;
+
+      roomCode.textContent =
+        room;
+
 
       setupHost();
 
-      show(lobby);
+
+      showScreen(lobby);
+
 
       renderLobby();
+
+
+      lobbyHint.textContent =
+        "Waiting for players...";
+
 
       console.log(
         "ROOM CREATED:",
         room
       );
-    } catch (e) {
+
+
+    } catch (err) {
+
       console.error(
-        "CREATE ROOM ERROR:",
-        e
+        "Create room failed:",
+        err
       );
+
 
       isHost = false;
-      peer = null;
 
-      error(
-        homeError,
-        "Could not create room. Refresh and try again."
-      );
+
+      homeError.textContent =
+        "Could not create room. Refresh and try again.";
+
     }
 
+
     createBtn.disabled = false;
+
     createBtn.innerHTML =
-      'CREATE ROOM <span>→</span>';
+      "CREATE ROOM <span>→</span>";
+
   }
+
 
   // =========================
   // JOIN ROOM
   // =========================
-  async function joinRoom() {
-    error(homeError, "");
 
-    const entered =
+  async function joinRoom() {
+
+    homeError.textContent = "";
+
+    const code =
       joinCode.value
         .trim()
         .toUpperCase();
 
-    if (entered.length !== 6) {
-      error(
-        homeError,
-        "Enter a 6-character room code."
-      );
+
+    if (code.length !== 6) {
+
+      homeError.textContent =
+        "Enter a valid 6-character room code.";
 
       return;
+
     }
 
+
     joinBtn.disabled = true;
-    joinBtn.textContent = "JOINING...";
+
+    joinBtn.textContent =
+      "JOINING...";
+
 
     try {
+
       isHost = false;
 
-      room = entered;
+      room = code;
 
-      console.log(
-        "Joining room:",
-        room
-      );
 
-      peer = await createPeer();
+      peer =
+        await createPeer();
 
-      myId = peer.id;
 
-      console.log(
-        "My peer ID:",
-        myId
-      );
+      myId =
+        peer.id;
+
 
       setupClient();
+
 
       const hostId =
         "lastalive-" +
         room.toLowerCase();
 
+
       console.log(
         "Connecting to:",
         hostId
       );
+
 
       const conn =
         peer.connect(
@@ -311,588 +424,799 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         );
 
-      await waitForConnection(conn);
 
-      connections.set(
-        conn.peer,
-        conn
-      );
+      setupConnection(conn);
 
-      conn.send({
-        type: "hello",
-        id: myId,
-        name: "PLAYER"
+
+      conn.on("open", () => {
+
+        console.log(
+          "CONNECTED TO HOST"
+        );
+
+
+        conn.send({
+
+          type: "hello",
+
+          id: myId,
+
+          name:
+            playerName.value.trim() ||
+            "PLAYER"
+
+        });
+
+
+        roomCode.textContent =
+          room;
+
+
+        showScreen(lobby);
+
+
+        lobbyHint.textContent =
+          "Connected. Waiting for host...";
+
       });
 
-      roomCode.textContent = room;
 
-      show(lobby);
+    } catch (err) {
 
-      lobbyHint.textContent =
-        "Connected. Waiting for host...";
-
-      console.log(
-        "CONNECTED TO HOST"
-      );
-    } catch (e) {
       console.error(
-        "JOIN ERROR:",
-        e
+        "Join failed:",
+        err
       );
 
-      error(
-        homeError,
-        "Room not found or host is offline."
-      );
 
-      if (peer) {
-        try {
-          peer.destroy();
-        } catch (_) {}
-      }
+      homeError.textContent =
+        "Could not join room. Check the code.";
 
-      peer = null;
     }
 
+
     joinBtn.disabled = false;
-    joinBtn.textContent = "JOIN";
+
+    joinBtn.textContent =
+      "JOIN";
+
   }
 
+
   // =========================
-  // HOST SETUP
+  // HOST
   // =========================
+
   function setupHost() {
-    if (!peer) return;
 
     peer.on(
       "connection",
-      (conn) => {
+      conn => {
+
         console.log(
-          "INCOMING PLAYER:",
+          "Incoming connection:",
           conn.peer
         );
 
+
         if (
-          Object.keys(players).length >=
+          Object.keys(players)
+            .length >=
           MAX_PLAYERS
         ) {
+
           conn.on("open", () => {
+
             conn.send({
               type: "full"
             });
 
             conn.close();
+
           });
 
           return;
+
         }
 
-        connections.set(
-          conn.peer,
+
+        setupConnection(conn);
+
+      }
+    );
+
+
+    peer.on(
+      "disconnected",
+      () => {
+
+        console.warn(
+          "Host disconnected from PeerJS"
+        );
+
+      }
+    );
+
+  }
+
+
+  // =========================
+  // CLIENT
+  // =========================
+
+  function setupClient() {
+
+    peer.on(
+      "disconnected",
+      () => {
+
+        console.warn(
+          "Client disconnected"
+        );
+
+      }
+    );
+
+  }
+
+
+  // =========================
+  // CONNECTION
+  // =========================
+
+  function setupConnection(conn) {
+
+    connections.set(
+      conn.peer,
+      conn
+    );
+
+
+    conn.on(
+      "data",
+      data => {
+
+        receiveData(
+          data,
           conn
         );
 
-        conn.on("open", () => {
-          console.log(
-            "PLAYER CONNECTION OPEN:",
-            conn.peer
-          );
-        });
+      }
+    );
 
-        conn.on("data", (data) => {
-          receiveData(
-            data,
-            conn
-          );
-        });
 
-        conn.on("close", () => {
-          console.log(
-            "PLAYER LEFT:",
-            conn.peer
-          );
+    conn.on(
+      "close",
+      () => {
+
+        console.log(
+          "Connection closed:",
+          conn.peer
+        );
+
+
+        connections.delete(
+          conn.peer
+        );
+
+
+        if (isHost) {
 
           delete players[
             conn.peer
           ];
 
-          connections.delete(
-            conn.peer
-          );
 
           broadcastState();
 
+
           renderLobby();
-        });
 
-        conn.on("error", (err) => {
-          console.error(
-            "PLAYER CONNECTION ERROR:",
-            err
-          );
-        });
-      }
-    );
-
-    peer.on("error", (err) => {
-      console.error(
-        "HOST PEER ERROR:",
-        err
-      );
-    });
-  }
-
-  // =========================
-  // CLIENT SETUP
-  // =========================
-  function setupClient() {
-    peer.on("error", (err) => {
-      console.error(
-        "CLIENT PEER ERROR:",
-        err
-      );
-    });
-
-    peer.on("disconnected", () => {
-      console.warn(
-        "Disconnected from PeerJS server"
-      );
-    });
-  }
-
-  // =========================
-  // WAIT CONNECTION
-  // =========================
-  function waitForConnection(conn) {
-    return new Promise(
-      (resolve, reject) => {
-        if (conn.open) {
-          resolve();
-          return;
         }
 
-        const timeout =
-          setTimeout(() => {
-            reject(
-              new Error(
-                "Connection timeout"
-              )
-            );
-          }, 10000);
-
-        conn.on("open", () => {
-          clearTimeout(timeout);
-          resolve();
-        });
-
-        conn.on("error", (err) => {
-          clearTimeout(timeout);
-          reject(err);
-        });
       }
     );
+
+
+    conn.on(
+      "error",
+      err => {
+
+        console.error(
+          "Connection error:",
+          err
+        );
+
+      }
+    );
+
   }
 
+
   // =========================
-  // RECEIVE DATA
+  // RECEIVE
   // =========================
+
   function receiveData(
     data,
     conn
   ) {
+
     if (
       !data ||
       !data.type
-    ) {
-      return;
-    }
+    ) return;
+
 
     console.log(
-      "RECEIVED:",
+      "DATA:",
       data.type
     );
 
-    // PLAYER JOINED
+
+    // PLAYER JOIN
     if (
       data.type === "hello" &&
       isHost
     ) {
+
       if (
-        Object.keys(players).length >=
+        Object.keys(players)
+          .length >=
         MAX_PLAYERS
       ) {
+
         conn.send({
           type: "full"
         });
 
         return;
+
       }
 
-      const player =
+
+      players[conn.peer] =
         createPlayer(
           conn.peer,
           data.name ||
-            "PLAYER",
-          false
+            "PLAYER"
         );
 
-      players[conn.peer] =
-        player;
 
       console.log(
         "PLAYER ADDED:",
-        player
+        players[conn.peer]
       );
 
-      conn.send({
-        type: "state",
-        players,
-        code: room
+
+      broadcast({
+        type: "lobby",
+        players
       });
 
-      broadcastState();
+
+      conn.send({
+        type: "lobby",
+        players
+      });
+
 
       renderLobby();
 
+
       lobbyHint.textContent =
-        "Player joined. Ready!";
+        "Player joined!";
+
     }
+
+
+    // LOBBY
+    if (
+      data.type === "lobby" &&
+      !isHost
+    ) {
+
+      players =
+        data.players ||
+        {};
+
+      renderLobby();
+
+    }
+
+
+    // NAME
+    if (
+      data.type === "name"
+    ) {
+
+      if (
+        players[data.id]
+      ) {
+
+        players[
+          data.id
+        ].name =
+          data.name;
+
+      }
+
+
+      renderLobby();
+
+
+      if (isHost) {
+
+        broadcastState();
+
+      }
+
+    }
+
+
+    // START
+    if (
+      data.type === "start"
+    ) {
+
+      players =
+        data.players ||
+        {};
+
+      hazards =
+        data.hazards ||
+        [];
+
+      round =
+        data.round ||
+        1;
+
+      timeLeft =
+        GAME_TIME;
+
+
+      startRound(false);
+
+    }
+
+
+    // MOVEMENT
+    if (
+      data.type === "move" &&
+      isHost
+    ) {
+
+      const p =
+        players[data.id];
+
+
+      if (
+        !p ||
+        !p.alive
+      ) return;
+
+
+      p.x =
+        clamp(
+          p.x +
+          data.dx,
+          3,
+          97
+        );
+
+
+      p.y =
+        clamp(
+          p.y +
+          data.dy,
+          5,
+          95
+        );
+
+
+      checkHazard(p);
+
+
+      broadcastState();
+
+    }
+
 
     // STATE
     if (
       data.type === "state" &&
       !isHost
     ) {
+
       players =
-        data.players || {};
-
-      room =
-        data.code || room;
-
-      roomCode.textContent =
-        room;
-
-      renderLobby();
-
-      if (
-        game.classList.contains(
-          "active"
-        )
-      ) {
-        renderGame();
-      }
-    }
-
-    // NAME
-    if (
-      data.type === "name" &&
-      isHost
-    ) {
-      if (
-        players[conn.peer]
-      ) {
-        players[
-          conn.peer
-        ].name =
-          data.name;
-      }
-
-      broadcastState();
-
-      renderLobby();
-    }
-
-    // START
-    if (
-      data.type === "start" &&
-      !isHost
-    ) {
-      players =
-        data.players || {};
+        data.players ||
+        {};
 
       hazards =
-        data.hazards || [];
+        data.hazards ||
+        [];
+
+      timeLeft =
+        typeof data.timeLeft ===
+        "number"
+          ? data.timeLeft
+          : timeLeft;
+
 
       round =
-        data.round || 1;
+        data.round ||
+        round;
 
-      startRound(false);
-    }
-
-    // MOVEMENT
-    if (
-      data.type === "input" &&
-      isHost
-    ) {
-      const p =
-        players[data.id];
-
-      if (
-        !p ||
-        !p.alive
-      ) {
-        return;
-      }
-
-      p.x =
-        Math.max(
-          3,
-          Math.min(
-            97,
-            p.x + data.dx
-          )
-        );
-
-      p.y =
-        Math.max(
-          5,
-          Math.min(
-            95,
-            p.y + data.dy
-          )
-        );
-
-      checkHazard(p);
-
-      broadcastState();
 
       renderGame();
+
     }
+
 
     // RESULT
     if (
       data.type === "result" &&
       !isHost
     ) {
+
       players =
-        data.players || {};
+        data.players ||
+        {};
 
       endRound();
+
     }
+
 
     // REMATCH
     if (
       data.type === "rematch" &&
       isHost
     ) {
-      round++;
 
-      startRound(true);
+      startNewRound();
+
     }
 
-    // ROOM FULL
+
+    // FULL
     if (
       data.type === "full"
     ) {
+
       alert(
         "This room is full."
       );
+
     }
+
   }
+
 
   // =========================
   // BROADCAST
   // =========================
+
   function broadcast(data) {
+
     connections.forEach(
-      (conn) => {
+      conn => {
+
         if (
           conn &&
           conn.open
         ) {
+
           try {
+
             conn.send(data);
-          } catch (e) {
-            console.error(e);
+
+          } catch (err) {
+
+            console.error(
+              err
+            );
+
           }
+
         }
+
       }
     );
+
   }
 
+
   function broadcastState() {
+
     broadcast({
+
       type: "state",
+
       players,
-      code: room
+
+      hazards,
+
+      timeLeft,
+
+      round
+
     });
+
   }
+
+
+  // =========================
+  // LOBBY
+  // =========================
+
+  function renderLobby() {
+
+    const list =
+      Object.values(players);
+
+
+    playerCount.textContent =
+      `${list.length} / ${MAX_PLAYERS}`;
+
+
+    playerList.innerHTML = "";
+
+
+    list.forEach(
+      (p, index) => {
+
+        const row =
+          document.createElement(
+            "div"
+          );
+
+
+        row.className =
+          "player";
+
+
+        row.innerHTML = `
+
+          <span
+            class="player-dot"
+            style="
+              background:${getColor(index)}
+            "
+          ></span>
+
+          <span>
+            ${escapeHTML(
+              p.name
+            )}
+          </span>
+
+          ${
+            p.id === myId
+              ? `<small>YOU</small>`
+              : ""
+          }
+
+          ${
+            p.host
+              ? `<small>HOST</small>`
+              : ""
+          }
+
+        `;
+
+
+        playerList.appendChild(
+          row
+        );
+
+      }
+    );
+
+
+    startBtn.disabled =
+      !isHost ||
+      list.length < 2;
+
+  }
+
 
   // =========================
   // NAME
   // =========================
+
   setName.addEventListener(
     "click",
     () => {
-      const n =
+
+      const name =
         (
           playerName.value.trim() ||
           "PLAYER"
         ).slice(0, 14);
 
-      myName = n;
+
+      myName = name;
+
 
       if (players[myId]) {
-        players[myId].name =
-          n;
+
+        players[
+          myId
+        ].name =
+          name;
+
       }
+
 
       if (isHost) {
+
         broadcastState();
-        renderLobby();
+
       } else {
-        broadcast({
-          type: "name",
-          name: n
-        });
+
+        const conn =
+          connections.values()
+            .next().value;
+
+
+        if (
+          conn &&
+          conn.open
+        ) {
+
+          conn.send({
+
+            type: "name",
+
+            id: myId,
+
+            name
+
+          });
+
+        }
+
       }
+
+
+      renderLobby();
+
     }
   );
 
-  // =========================
-  // BUTTONS
-  // =========================
-  createBtn.addEventListener(
-    "click",
-    createRoom
-  );
-
-  joinBtn.addEventListener(
-    "click",
-    joinRoom
-  );
-
-  joinCode.addEventListener(
-    "input",
-    () => {
-      joinCode.value =
-        joinCode.value
-          .toUpperCase()
-          .replace(
-            /[^A-Z0-9]/g,
-            ""
-          )
-          .slice(0, 6);
-    }
-  );
 
   // =========================
-  // COPY
+  // START
   // =========================
-  copyCode.addEventListener(
-    "click",
-    async () => {
-      try {
-        await navigator.clipboard.writeText(
-          room
-        );
 
-        copyCode.textContent =
-          "COPIED";
-
-        setTimeout(() => {
-          copyCode.textContent =
-            "COPY";
-        }, 1200);
-      } catch (e) {
-        prompt(
-          "Copy this room code:",
-          room
-        );
-      }
-    }
-  );
-
-  // =========================
-  // START GAME
-  // =========================
   startBtn.addEventListener(
     "click",
     () => {
+
       if (!isHost) return;
+
 
       if (
         Object.keys(players)
           .length < 2
       ) {
+
         return;
+
       }
+
 
       round++;
 
-      startRound(true);
+
+      startNewRound();
+
     }
   );
+
+
+  // =========================
+  // NEW ROUND
+  // =========================
+
+  function startNewRound() {
+
+    if (!isHost) return;
+
+
+    Object.values(players)
+      .forEach(
+        (p, index) => {
+
+          p.alive = true;
+
+          p.x =
+            10 +
+            (index * 11) %
+              80;
+
+          p.y =
+            15 +
+            (index * 13) %
+              70;
+
+        }
+      );
+
+
+    hazards =
+      createHazards();
+
+
+    timeLeft =
+      GAME_TIME;
+
+
+    running = true;
+
+
+    broadcast({
+
+      type: "start",
+
+      players,
+
+      hazards,
+
+      round
+
+    });
+
+
+    startRound(true);
+
+  }
+
 
   // =========================
   // START ROUND
   // =========================
-  function startRound(
-    hostStarting
-  ) {
-    if (
-      isHost &&
-      hostStarting
-    ) {
-      Object.values(
-        players
-      ).forEach((p) => {
-        p.alive = true;
-        p.x =
-          Math.random() *
-            80 +
-          10;
-        p.y =
-          Math.random() *
-            70 +
-          15;
-      });
 
-      hazards =
-        createHazards();
-
-      timeLeft = 30;
-
-      broadcast({
-        type: "start",
-        players,
-        round,
-        hazards
-      });
-    }
+  function startRound(host) {
 
     running = true;
 
-    show(game);
 
-    roundNo.textContent =
-      String(round).padStart(
-        2,
-        "0"
-      );
+    showScreen(game);
 
-    if (
-      isHost &&
-      hostStarting
-    ) {
-      runHostLoop();
-    }
 
     renderGame();
+
+
+    if (host) {
+
+      runHostLoop();
+
+    }
+
   }
+
 
   // =========================
   // HAZARDS
   // =========================
+
   function createHazards() {
+
     const list = [];
+
 
     for (
       let i = 0;
       i < 8;
       i++
     ) {
+
       list.push({
+
+        id: i,
+
         type:
           i % 3 === 0
             ? "pit"
@@ -902,472 +1226,740 @@ document.addEventListener("DOMContentLoaded", () => {
 
         x:
           Math.random() *
-            88 +
-          6,
-
-        y:
-          Math.random() *
             84 +
           8,
 
-        r:
-          i % 3 === 0
-            ? 5
-            : 3
+        y:
+          Math.random() *
+            78 +
+          10
+
       });
+
     }
 
+
     return list;
+
   }
 
+
   // =========================
-  // HOST GAME LOOP
+  // HOST LOOP
   // =========================
+
   function runHostLoop() {
+
     clearInterval(
       gameTimer
     );
 
-    timeLeft = 30;
 
     gameTimer =
-      setInterval(() => {
-        if (!running) {
-          clearInterval(
-            gameTimer
-          );
+      setInterval(
+        () => {
 
-          return;
-        }
+          if (!running) {
 
-        timeLeft -= 0.1;
+            clearInterval(
+              gameTimer
+            );
 
-        timerEl.textContent =
-          Math.max(
-            0,
-            timeLeft
-          ).toFixed(1);
+            return;
 
-        // MOVE BOMBS
-        hazards.forEach(
-          (h, i) => {
-            if (
-              h.type ===
-              "bomb"
-            ) {
-              h.x +=
-                Math.sin(
-                  Date.now() /
-                    500 +
-                    i
-                ) *
-                0.18;
-
-              h.y +=
-                Math.cos(
-                  Date.now() /
-                    650 +
-                    i
-                ) *
-                0.15;
-            }
           }
-        );
 
-        Object.values(
-          players
-        ).forEach(
-          checkHazard
-        );
 
-        const alive =
-          Object.values(
-            players
-          ).filter(
-            (p) =>
-              p.alive
-          );
+          timeLeft -= 0.1;
 
-        if (
-          alive.length <= 1 ||
-          timeLeft <= 0
-        ) {
-          finishHost();
 
-          return;
-        }
+          moveHazards();
 
-        broadcastState();
 
-        renderGame();
-      }, 100);
+          Object.values(players)
+            .forEach(
+              checkHazard
+            );
+
+
+          const alive =
+            Object.values(players)
+              .filter(
+                p =>
+                  p.alive
+              );
+
+
+          if (
+            alive.length <= 1 ||
+            timeLeft <= 0
+          ) {
+
+            finishHost();
+
+            return;
+
+          }
+
+
+          broadcastState();
+
+
+          renderGame();
+
+        },
+        100
+      );
+
   }
 
+
   // =========================
-  // HAZARD CHECK
+  // MOVE HAZARDS
   // =========================
+
+  function moveHazards() {
+
+    hazards.forEach(
+      (h, i) => {
+
+        if (
+          h.type !==
+          "bomb"
+        ) return;
+
+
+        h.x +=
+          Math.sin(
+            Date.now() /
+              500 +
+              i
+          ) *
+          0.15;
+
+
+        h.y +=
+          Math.cos(
+            Date.now() /
+              650 +
+              i
+          ) *
+          0.12;
+
+      }
+    );
+
+  }
+
+
+  // =========================
+  // CHECK HAZARD
+  // =========================
+
   function checkHazard(p) {
+
     if (!p.alive) return;
+
 
     for (
       const h of hazards
     ) {
+
       const dx =
         p.x - h.x;
 
       const dy =
         p.y - h.y;
 
+
       const distance =
         Math.sqrt(
           dx * dx +
-            dy * dy
+          dy * dy
         );
 
+
       if (
-        distance <
-        h.r + 1.8
+        distance < 5
       ) {
-        p.alive = false;
+
+        p.alive =
+          false;
 
         break;
+
       }
+
     }
+
   }
 
+
   // =========================
-  // FINISH HOST
+  // FINISH
   // =========================
+
   function finishHost() {
+
     if (!running) return;
 
+
     running = false;
+
 
     clearInterval(
       gameTimer
     );
 
-    const alive =
-      Object.values(
-        players
-      ).filter(
-        (p) =>
+
+    Object.values(players)
+      .filter(
+        p =>
           p.alive
+      )
+      .forEach(
+        p =>
+          p.score += 500
       );
 
-    alive.forEach(
-      (p) => {
-        p.score += 500;
-      }
-    );
 
     broadcast({
+
       type: "result",
+
       players
+
     });
 
+
     endRound();
+
   }
 
-  // =========================
-  // END ROUND
-  // =========================
+
   function endRound() {
+
     running = false;
+
 
     clearInterval(
       gameTimer
     );
 
-    const sorted =
-      Object.values(
-        players
-      ).sort(
-        (a, b) =>
-          b.score -
-          a.score
-      );
 
-    if (
-      sorted.length
-    ) {
+    const sorted =
+      Object.values(players)
+        .sort(
+          (a, b) =>
+            b.score -
+            a.score
+        );
+
+
+    const winner =
+      sorted[0];
+
+
+    if (winner) {
+
       winnerTitle.textContent =
-        sorted[0].name.toUpperCase() +
+        winner.name.toUpperCase() +
         " WINS";
 
+
       winnerSub.textContent =
-        sorted[0].alive
+        winner.alive
           ? "They survived the arena."
-          : "Highest score takes it.";
+          : "Highest score wins.";
+
     }
+
 
     finalScores.innerHTML =
       sorted
         .map(
           (p, i) => `
-          <div class="score">
-            <span>
-              ${i + 1}.
-              ${escapeHTML(
-                p.name
-              )}
-            </span>
-            <b>
-              ${p.score}
-            </b>
-          </div>
-        `
+
+            <div class="score">
+
+              <span>
+                ${i + 1}.
+                ${escapeHTML(
+                  p.name
+                )}
+              </span>
+
+              <b>
+                ${p.score}
+              </b>
+
+            </div>
+
+          `
         )
         .join("");
 
-    show(result);
+
+    showScreen(result);
+
   }
 
-  // =========================
-  // GAME RENDER
-  // =========================
-  function renderGame() {
-    playersEl.innerHTML =
-      Object.values(
-        players
-      )
-        .map(
-          (p) => `
-          <div
-            class="player-dot
-              ${p.id === myId ? "me" : ""}
-              ${p.alive ? "" : "dead"}"
-            style="
-              left:${p.x}%;
-              top:${p.y}%;
-            "
-            title="${escapeHTML(
-              p.name
-            )}"
-          ></div>
-        `
-        )
-        .join("");
 
-    hazardsEl.innerHTML =
-      hazards
-        .map(
-          (h) => `
-          <div
-            class="hazard ${h.type}"
-            style="
-              left:${h.x}%;
-              top:${h.y}%;
-            "
-          ></div>
-        `
-        )
-        .join("");
+  // =========================
+  // RENDER GAME
+  // =========================
+
+  function renderGame() {
 
     aliveCount.textContent =
-      Object.values(
-        players
-      ).filter(
-        (p) =>
-          p.alive
-      ).length;
+      Object.values(players)
+        .filter(
+          p =>
+            p.alive
+        )
+        .length;
+
 
     roundNo.textContent =
-      String(round).padStart(
-        2,
-        "0"
-      );
+      String(round)
+        .padStart(2, "0");
+
 
     timerEl.textContent =
       Math.max(
         0,
         timeLeft
       ).toFixed(1);
+
+
+    playersEl.innerHTML =
+      Object.values(players)
+        .map(
+          p => `
+
+            <div
+              class="
+                player-dot
+                ${p.id === myId ? "me" : ""}
+                ${p.alive ? "" : "dead"}
+              "
+              style="
+                left:${p.x}%;
+                top:${p.y}%;
+              "
+              title="${escapeHTML(
+                p.name
+              )}"
+            ></div>
+
+          `
+        )
+        .join("");
+
+
+    hazardsEl.innerHTML =
+      hazards
+        .map(
+          h => `
+
+            <div
+              class="
+                hazard
+                ${h.type}
+              "
+              style="
+                left:${h.x}%;
+                top:${h.y}%;
+              "
+            ></div>
+
+          `
+        )
+        .join("");
+
   }
+
 
   // =========================
   // MOVEMENT
   // =========================
+
+  setInterval(
+    () => {
+
+      if (
+        !running ||
+        !game.classList.contains(
+          "active"
+        )
+      ) {
+
+        return;
+
+      }
+
+
+      let dx = 0;
+      let dy = 0;
+
+
+      if (keys.w) dy -= 1;
+      if (keys.s) dy += 1;
+      if (keys.a) dx -= 1;
+      if (keys.d) dx += 1;
+
+
+      if (
+        dx === 0 &&
+        dy === 0
+      ) {
+
+        return;
+
+      }
+
+
+      const speed = 0.9;
+
+
+      if (isHost) {
+
+        const me =
+          players[myId];
+
+
+        if (
+          !me ||
+          !me.alive
+        ) return;
+
+
+        me.x =
+          clamp(
+            me.x +
+              dx *
+                speed,
+            3,
+            97
+          );
+
+
+        me.y =
+          clamp(
+            me.y +
+              dy *
+                speed,
+            5,
+            95
+          );
+
+
+        checkHazard(me);
+
+
+        renderGame();
+
+
+      } else {
+
+        const conn =
+          connections.values()
+            .next().value;
+
+
+        if (
+          conn &&
+          conn.open
+        ) {
+
+          conn.send({
+
+            type: "move",
+
+            id: myId,
+
+            dx:
+              dx *
+              speed,
+
+            dy:
+              dy *
+              speed
+
+          });
+
+        }
+
+      }
+
+    },
+    45
+  );
+
+
+  // =========================
+  // KEYBOARD
+  // =========================
+
   document.addEventListener(
     "keydown",
-    (e) => {
+    e => {
+
       const k =
         e.key.toLowerCase();
 
+
       if (
-        Object.prototype.hasOwnProperty.call(
-          keys,
-          k
-        )
-      ) {
+        Object.prototype
+          .hasOwnProperty
+          .call(
+            keys,
+            k
+          )
+      {
+
         keys[k] = true;
+
         e.preventDefault();
+
       }
+
     }
   );
+
 
   document.addEventListener(
     "keyup",
-    (e) => {
+    e => {
+
       const k =
         e.key.toLowerCase();
 
+
       if (
-        Object.prototype.hasOwnProperty.call(
-          keys,
-          k
-        )
-      ) {
+        Object.prototype
+          .hasOwnProperty
+          .call(
+            keys,
+            k
+          )
+      {
+
         keys[k] = false;
+
       }
+
     }
   );
 
-  setInterval(() => {
-    if (
-      !running ||
-      !game.classList.contains(
-        "active"
-      )
-    ) {
-      return;
-    }
 
-    let dx = 0;
-    let dy = 0;
+  // =========================
+  // COPY
+  // =========================
 
-    if (keys.w) dy -= 1;
-    if (keys.s) dy += 1;
-    if (keys.a) dx -= 1;
-    if (keys.d) dx += 1;
+  copyCode.addEventListener(
+    "click",
+    async () => {
 
-    if (
-      dx === 0 &&
-      dy === 0
-    ) {
-      return;
-    }
+      try {
 
-    const speed = 0.9;
+        await navigator.clipboard
+          .writeText(room);
 
-    const me =
-      players[myId];
 
-    if (!me || !me.alive) {
-      return;
-    }
+        copyCode.textContent =
+          "COPIED";
 
-    if (isHost) {
-      me.x =
-        Math.max(
-          3,
-          Math.min(
-            97,
-            me.x +
-              dx *
-                speed
-          )
+
+        setTimeout(
+          () => {
+
+            copyCode.textContent =
+              "COPY";
+
+          },
+          1200
         );
 
-      me.y =
-        Math.max(
-          5,
-          Math.min(
-            95,
-            me.y +
-              dy *
-                speed
-          )
-        );
 
-      checkHazard(me);
+      } catch {
 
-      renderGame();
-    } else {
-      const conn =
-        connections.values()
-          .next().value;
+        alert(room);
 
-      if (
-        conn &&
-        conn.open
-      ) {
-        conn.send({
-          type: "input",
-          id: myId,
-          dx:
-            dx * speed,
-          dy:
-            dy * speed
-        });
       }
+
     }
-  }, 45);
+  );
+
 
   // =========================
   // REMATCH
   // =========================
+
   rematchBtn.addEventListener(
     "click",
     () => {
+
       if (isHost) {
+
         round++;
 
-        startRound(true);
+        startNewRound();
+
       } else {
-        broadcast({
-          type: "rematch"
-        });
 
-        rematchBtn.disabled =
-          true;
+        const conn =
+          connections.values()
+            .next().value;
 
-        rematchBtn.textContent =
-          "WAITING FOR HOST...";
+
+        if (
+          conn &&
+          conn.open
+        ) {
+
+          conn.send({
+
+            type:
+              "rematch"
+
+          });
+
+
+          rematchBtn.disabled =
+            true;
+
+
+          rematchBtn.textContent =
+            "WAITING...";
+
+        }
+
       }
+
     }
   );
 
+
   // =========================
-  // LEAVE
+  // MENU
   // =========================
-  leaveGame.addEventListener(
-    "click",
-    () => {
-      location.reload();
-    }
-  );
 
   homeBtn.addEventListener(
     "click",
     () => {
+
       location.reload();
+
     }
   );
 
-  // =========================
-  // ESCAPE HTML
-  // =========================
-  function escapeHTML(str) {
-    return String(str).replace(
-      /[&<>"']/g,
-      (m) =>
-        ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#039;"
-        }[m])
-    );
-  }
+
+  leaveGame.addEventListener(
+    "click",
+    () => {
+
+      location.reload();
+
+    }
+  );
+
 
   // =========================
-  // INITIAL
+  // JOIN ENTER
   // =========================
+
+  joinCode.addEventListener(
+    "input",
+    () => {
+
+      joinCode.value =
+        joinCode.value
+          .toUpperCase()
+          .replace(
+            /[^A-Z0-9]/g,
+            ""
+          )
+          .slice(0, 6);
+
+    }
+  );
+
+
+  joinCode.addEventListener(
+    "keydown",
+    e => {
+
+      if (
+        e.key === "Enter"
+      ) {
+
+        joinRoom();
+
+      }
+
+    }
+  );
+
+
+  // =========================
+  // HELPERS
+  // =========================
+
+  function clamp(
+    value,
+    min,
+    max
+  ) {
+
+    return Math.max(
+      min,
+      Math.min(
+        max,
+        value
+      )
+    );
+
+  }
+
+
+  function getColor(index) {
+
+    return colors[
+      index %
+      colors.length
+    ];
+
+  }
+
+
+  function escapeHTML(str) {
+
+    return String(str)
+      .replace(
+        /[&<>"']/g,
+        m =>
+          ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#039;"
+          }[m])
+      );
+
+  }
+
+
+  // =========================
+  // INIT
+  // =========================
+
   renderLobby();
 
   console.log(
-    "LAST//ALIVE multiplayer loaded."
+    "%c LAST//ALIVE READY ",
+    "background:#111;color:#b7ff3c;font-size:16px;padding:8px"
   );
+
 });
