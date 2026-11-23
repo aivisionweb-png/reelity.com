@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080808">
+  <title>REELITY — Your life. One scene at a time.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="grain"></div>
+  <header class="nav">
+    <a class="logo" href="#">REELITY<span>®</span></a>
+    <div class="nav-pill">AI CINEMA LAB</div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow"><span></span> TURN A MOMENT INTO A MOVIE</div>
+      <h1>Your life.<br><em>One scene</em> at a time.</h1>
+      <p>Upload one ordinary photo. Pick a genre. REELITY turns your moment into a cinematic scene.</p>
+      <button class="scroll-btn" onclick="document.querySelector('#studio').scrollIntoView({behavior:'smooth'})">MAKE A SCENE <span>↓</span></button>
+    </section>
+
+    <section id="studio" class="studio">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow"><span></span> THE STUDIO</div>
+          <h2>Give us a moment.</h2>
+        </div>
+        <div class="step">01 / 03</div>
+      </div>
+
+      <div class="workspace">
+        <div class="upload-card" id="dropZone">
+          <input id="fileInput" type="file" accept="image/*" hidden>
+          <div id="uploadEmpty">
+            <div class="upload-icon">＋</div>
+            <h3>Drop your photo here</h3>
+            <p>or <button class="text-btn" id="chooseBtn">choose from device</button></p>
+            <small>JPG, PNG or WEBP · up to 10MB</small>
+          </div>
+          <div id="previewWrap" class="preview-wrap hidden">
+            <img id="preview" alt="Your uploaded scene">
+            <button id="removeBtn" class="remove">×</button>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="control-block">
+            <label>02 / CHOOSE YOUR GENRE</label>
+            <div class="genres" id="genres">
+              <button data-genre="Action">Action</button>
+              <button data-genre="Horror">Horror</button>
+              <button data-genre="Bollywood">Bollywood</button>
+              <button data-genre="Thriller">Thriller</button>
+              <button data-genre="Comedy">Comedy</button>
+              <button data-genre="Sci-Fi">Sci-Fi</button>
+            </div>
+          </div>
+
+          <button class="generate" id="generateBtn" disabled>
+            <span>MAKE MY MOVIE</span><b>→</b>
+          </button>
+          <p class="microcopy">No script. No prompt. Just your moment.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="loading" class="loading hidden">
+      <div class="loader-ring"></div>
+      <div class="loading-kicker">REELITY IS DIRECTING</div>
+      <h2 id="loadingText">Reading the scene...</h2>
+      <div class="loading-bar"><i id="bar"></i></div>
+      <p>Building a story around your image.</p>
+    </section>
+
+    <section id="result" class="result hidden">
+      <div class="result-top">
+        <div>
+          <div class="eyebrow"><span></span> YOUR FILM</div>
+          <h2 id="movieTitle">THE LAST FRAME</h2>
+        </div>
+        <div class="result-genre" id="resultGenre">THRILLER</div>
+      </div>
+
+      <div class="movie">
+        <div class="movie-image">
+          <img id="resultImage" alt="Cinematic scene">
+          <div class="play"><span>▶</span></div>
+          <div class="mock-label">CINEMATIC PREVIEW</div>
+        </div>
+        <div class="movie-copy">
+          <div class="scene-label">SCENE 01 · 00:10</div>
+          <p id="sceneText"></p>
+          <div class="credits">
+            <span>DIRECTED BY</span><strong>YOU + REELITY</strong>
+          </div>
+          <div class="actions">
+            <button id="againBtn">↻ MAKE ANOTHER</button>
+            <button id="shareBtn" class="light">SHARE SCENE</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>REELITY® 2026</span>
+    <span>YOUR LIFE. ONE SCENE AT A TIME.</span>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
