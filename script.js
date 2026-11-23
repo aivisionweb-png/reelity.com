@@ -1,63 +1,74 @@
+// LAST//ALIVE — FIXED MULTIPLAYER
+
 document.addEventListener("DOMContentLoaded", () => {
   const $ = (id) => document.getElementById(id);
 
   // =========================
-  // ELEMENTS
+  // ELEMENTS — MATCHES HTML
   // =========================
-  const homeScreen = $("home");
-  const lobbyScreen = $("lobby");
-  const gameScreen = $("game");
-  const resultScreen = $("result");
+  const home = $("home");
+  const lobby = $("lobby");
+  const game = $("game");
+  const result = $("result");
 
-  const createRoomBtn = $("createRoom");
-  const joinRoomBtn = $("joinRoom");
-  const roomInput = $("roomInput");
+  const createBtn = $("createBtn");
+  const joinBtn = $("joinBtn");
+  const joinCode = $("joinCode");
 
-  const roomCodeEl = $("roomCode");
-  const copyBtn = $("copyCode");
+  const homeError = $("homeError");
 
-  const nameInput = $("nameInput");
-  const setNameBtn = $("setName");
+  const roomCode = $("roomCode");
+  const copyCode = $("copyCode");
 
+  const playerName = $("playerName");
+  const setName = $("setName");
   const playerList = $("playerList");
   const playerCount = $("playerCount");
 
-  const startBtn = $("startGame");
-  const lobbyStatus = $("lobbyStatus");
+  const startBtn = $("startBtn");
+  const lobbyHint = $("lobbyHint");
+  const lobbyError = $("lobbyError");
 
-  const roundEl = $("round");
-  const timerEl = $("timer");
-  const aliveEl = $("alive");
   const arena = $("arena");
+  const playersEl = $("players");
+  const hazardsEl = $("hazards");
 
-  const winnerEl = $("winner");
+  const timerEl = $("timer");
+  const aliveCount = $("aliveCount");
+  const roundNo = $("roundNo");
+
+  const arenaMessage = $("arenaMessage");
+
+  const winnerTitle = $("winnerTitle");
+  const winnerSub = $("winnerSub");
   const finalScores = $("finalScores");
 
-  const rematchBtn = $("rematch");
-  const menuBtn = $("mainMenu");
+  const rematchBtn = $("rematchBtn");
+  const homeBtn = $("homeBtn");
+  const leaveGame = $("leaveGame");
 
   // =========================
-  // GAME STATE
+  // STATE
   // =========================
   const MAX_PLAYERS = 8;
-  const GAME_TIME = 30;
 
   let peer = null;
   let isHost = false;
+
   let myId = "";
   let myName = "PLAYER";
   let room = "";
 
   let players = {};
-  let connections = {};
+  let connections = new Map();
 
   let hazards = [];
+
   let running = false;
-  let timeLeft = GAME_TIME;
   let round = 0;
+  let timeLeft = 30;
 
   let gameTimer = null;
-  let moveLoop = null;
 
   const keys = {
     w: false,
@@ -66,26 +77,30 @@ document.addEventListener("DOMContentLoaded", () => {
     d: false
   };
 
+  const colors = [
+    "#54b8ff",
+    "#ff3b30",
+    "#b7ff3c",
+    "#ff9f1c",
+    "#c084fc",
+    "#22d3ee",
+    "#fb7185",
+    "#facc15"
+  ];
+
   // =========================
   // SCREEN
   // =========================
-  function showScreen(screen) {
-    document.querySelectorAll(".screen").forEach((s) => {
-      s.classList.remove("active");
+  function show(screen) {
+    [home, lobby, game, result].forEach((s) => {
+      if (s) s.classList.remove("active");
     });
 
     if (screen) screen.classList.add("active");
   }
 
-  function showError(message) {
-    console.error(message);
-
-    if (lobbyStatus) {
-      lobbyStatus.textContent = message;
-      lobbyStatus.style.color = "#ff4444";
-    }
-
-    alert(message);
+  function error(el, message) {
+    if (el) el.textContent = message || "";
   }
 
   // =========================
@@ -93,6 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================
   function generateRoomCode() {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
     let code = "";
 
     for (let i = 0; i < 6; i++) {
@@ -103,220 +119,408 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =========================
-  // CREATE PLAYER
+  // PEER CREATION
   // =========================
-  function createPlayer(id, name) {
+  function createPeer(id = undefined) {
+    return new Promise((resolve, reject) => {
+      let p;
+
+      try {
+        if (id) {
+          p = new Peer(id, {
+            debug: 1
+          });
+        } else {
+          p = new Peer({
+            debug: 1
+          });
+        }
+      } catch (e) {
+        reject(e);
+        return;
+      }
+
+      let settled = false;
+
+      p.on("open", (peerId) => {
+        if (settled) return;
+
+        settled = true;
+
+        console.log("PEER OPEN:", peerId);
+
+        resolve(p);
+      });
+
+      p.on("error", (err) => {
+        console.error("PEER ERROR:", err);
+
+        if (!settled) {
+          settled = true;
+          reject(err);
+        }
+      });
+    });
+  }
+
+  // =========================
+  // PLAYER
+  // =========================
+  function createPlayer(id, name, host = false) {
     return {
       id,
       name: name || "PLAYER",
-      x: 50,
-      y: 50,
+      host,
+
+      x: Math.random() * 80 + 10,
+      y: Math.random() * 70 + 15,
+
       alive: true,
-      score: 0,
-      color: getPlayerColor(id)
+      score: 0
     };
   }
 
   // =========================
   // CREATE ROOM
   // =========================
-  function createRoom() {
-    room = generateRoomCode();
-    isHost = true;
+  async function createRoom() {
+    error(homeError, "");
 
-    roomCodeEl.textContent = room;
+    createBtn.disabled = true;
+    createBtn.textContent = "CREATING...";
 
-    players = {};
-    connections = {};
+    try {
+      isHost = true;
 
-    createPeer("lastalive-" + room.toLowerCase());
+      room = generateRoomCode();
+
+      console.log("Creating room:", room);
+
+      peer = await createPeer(
+        "lastalive-" + room.toLowerCase()
+      );
+
+      myId = peer.id;
+
+      const enteredName =
+        playerName.value.trim();
+
+      myName =
+        (enteredName || "HOST")
+          .slice(0, 14);
+
+      players = {};
+
+      players[myId] =
+        createPlayer(
+          myId,
+          myName,
+          true
+        );
+
+      roomCode.textContent = room;
+
+      setupHost();
+
+      show(lobby);
+
+      renderLobby();
+
+      console.log(
+        "ROOM CREATED:",
+        room
+      );
+    } catch (e) {
+      console.error(
+        "CREATE ROOM ERROR:",
+        e
+      );
+
+      isHost = false;
+      peer = null;
+
+      error(
+        homeError,
+        "Could not create room. Refresh and try again."
+      );
+    }
+
+    createBtn.disabled = false;
+    createBtn.innerHTML =
+      'CREATE ROOM <span>→</span>';
   }
 
   // =========================
   // JOIN ROOM
   // =========================
-  function joinRoom() {
-    const code = roomInput.value.trim().toUpperCase();
+  async function joinRoom() {
+    error(homeError, "");
 
-    if (!code || code.length !== 6) {
-      alert("Enter a valid 6-character room code.");
+    const entered =
+      joinCode.value
+        .trim()
+        .toUpperCase();
+
+    if (entered.length !== 6) {
+      error(
+        homeError,
+        "Enter a 6-character room code."
+      );
+
       return;
     }
 
-    room = code;
-    isHost = false;
-
-    roomCodeEl.textContent = room;
-
-    createPeer();
-  }
-
-  // =========================
-  // CREATE PEER
-  // =========================
-  function createPeer(peerId = undefined) {
-    if (peer) {
-      try {
-        peer.destroy();
-      } catch (e) {}
-    }
+    joinBtn.disabled = true;
+    joinBtn.textContent = "JOINING...";
 
     try {
-      peer = peerId
-        ? new Peer(peerId)
-        : new Peer();
-    } catch (err) {
-      showError("PeerJS could not start.");
-      return;
-    }
+      isHost = false;
 
-    peer.on("open", (id) => {
-      myId = id;
+      room = entered;
 
-      console.log("Peer opened:", id);
+      console.log(
+        "Joining room:",
+        room
+      );
 
-      if (isHost) {
-        players[myId] = createPlayer(myId, myName);
+      peer = await createPeer();
 
-        renderLobby();
-        showScreen(lobbyScreen);
+      myId = peer.id;
 
-        lobbyStatus.textContent = "Waiting for players...";
-        lobbyStatus.style.color = "";
+      console.log(
+        "My peer ID:",
+        myId
+      );
 
-        console.log("HOST READY:", room);
-      } else {
-        connectToHost();
-      }
-    });
+      setupClient();
 
-    peer.on("connection", (conn) => {
-      console.log("Incoming connection:", conn.peer);
+      const hostId =
+        "lastalive-" +
+        room.toLowerCase();
 
-      if (!isHost) return;
+      console.log(
+        "Connecting to:",
+        hostId
+      );
 
-      setupConnection(conn);
-    });
+      const conn =
+        peer.connect(
+          hostId,
+          {
+            reliable: true
+          }
+        );
 
-    peer.on("error", (err) => {
-      console.error("PEER ERROR:", err);
+      await waitForConnection(conn);
 
-      if (err.type === "peer-unavailable") {
-        showError("Room not found. Check the room code.");
-      } else if (err.type === "unavailable-id") {
-        showError("Room is already being used. Create another room.");
-      } else if (err.type === "network") {
-        showError("Network error. Check your internet connection.");
-      } else {
-        console.log("PeerJS error:", err.type);
-      }
-    });
-
-    peer.on("disconnected", () => {
-      console.warn("Peer disconnected.");
-    });
-
-    peer.on("close", () => {
-      console.warn("Peer closed.");
-    });
-  }
-
-  // =========================
-  // CONNECT TO HOST
-  // =========================
-  function connectToHost() {
-    const hostId = "lastalive-" + room.toLowerCase();
-
-    console.log("Connecting to host:", hostId);
-
-    const conn = peer.connect(hostId, {
-      reliable: true
-    });
-
-    if (!conn) {
-      showError("Could not create connection.");
-      return;
-    }
-
-    setupConnection(conn);
-
-    conn.on("open", () => {
-      console.log("CONNECTED TO HOST!");
+      connections.set(
+        conn.peer,
+        conn
+      );
 
       conn.send({
         type: "hello",
         id: myId,
-        name: myName
+        name: "PLAYER"
       });
 
-      showScreen(lobbyScreen);
+      roomCode.textContent = room;
 
-      lobbyStatus.textContent = "Connected. Waiting for host...";
-      lobbyStatus.style.color = "";
-    });
+      show(lobby);
 
-    conn.on("error", (err) => {
-      console.error("Connection error:", err);
-      showError("Could not connect to this room.");
+      lobbyHint.textContent =
+        "Connected. Waiting for host...";
+
+      console.log(
+        "CONNECTED TO HOST"
+      );
+    } catch (e) {
+      console.error(
+        "JOIN ERROR:",
+        e
+      );
+
+      error(
+        homeError,
+        "Room not found or host is offline."
+      );
+
+      if (peer) {
+        try {
+          peer.destroy();
+        } catch (_) {}
+      }
+
+      peer = null;
+    }
+
+    joinBtn.disabled = false;
+    joinBtn.textContent = "JOIN";
+  }
+
+  // =========================
+  // HOST SETUP
+  // =========================
+  function setupHost() {
+    if (!peer) return;
+
+    peer.on(
+      "connection",
+      (conn) => {
+        console.log(
+          "INCOMING PLAYER:",
+          conn.peer
+        );
+
+        if (
+          Object.keys(players).length >=
+          MAX_PLAYERS
+        ) {
+          conn.on("open", () => {
+            conn.send({
+              type: "full"
+            });
+
+            conn.close();
+          });
+
+          return;
+        }
+
+        connections.set(
+          conn.peer,
+          conn
+        );
+
+        conn.on("open", () => {
+          console.log(
+            "PLAYER CONNECTION OPEN:",
+            conn.peer
+          );
+        });
+
+        conn.on("data", (data) => {
+          receiveData(
+            data,
+            conn
+          );
+        });
+
+        conn.on("close", () => {
+          console.log(
+            "PLAYER LEFT:",
+            conn.peer
+          );
+
+          delete players[
+            conn.peer
+          ];
+
+          connections.delete(
+            conn.peer
+          );
+
+          broadcastState();
+
+          renderLobby();
+        });
+
+        conn.on("error", (err) => {
+          console.error(
+            "PLAYER CONNECTION ERROR:",
+            err
+          );
+        });
+      }
+    );
+
+    peer.on("error", (err) => {
+      console.error(
+        "HOST PEER ERROR:",
+        err
+      );
     });
   }
 
   // =========================
-  // SETUP CONNECTION
+  // CLIENT SETUP
   // =========================
-  function setupConnection(conn) {
-    if (!conn) return;
+  function setupClient() {
+    peer.on("error", (err) => {
+      console.error(
+        "CLIENT PEER ERROR:",
+        err
+      );
+    });
 
-    connections[conn.peer] = conn;
+    peer.on("disconnected", () => {
+      console.warn(
+        "Disconnected from PeerJS server"
+      );
+    });
+  }
 
-    conn.on("open", () => {
-      console.log("Connection OPEN:", conn.peer);
+  // =========================
+  // WAIT CONNECTION
+  // =========================
+  function waitForConnection(conn) {
+    return new Promise(
+      (resolve, reject) => {
+        if (conn.open) {
+          resolve();
+          return;
+        }
 
-      if (isHost) {
-        conn.send({
-          type: "host-ready",
-          room,
-          players
+        const timeout =
+          setTimeout(() => {
+            reject(
+              new Error(
+                "Connection timeout"
+              )
+            );
+          }, 10000);
+
+        conn.on("open", () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+
+        conn.on("error", (err) => {
+          clearTimeout(timeout);
+          reject(err);
         });
       }
-    });
-
-    conn.on("data", (data) => {
-      receiveData(data, conn);
-    });
-
-    conn.on("close", () => {
-      console.log("Connection closed:", conn.peer);
-
-      if (isHost) {
-        delete connections[conn.peer];
-
-        if (players[conn.peer]) {
-          delete players[conn.peer];
-          broadcastState();
-          renderLobby();
-        }
-      }
-    });
-
-    conn.on("error", (err) => {
-      console.error("Connection error:", err);
-    });
+    );
   }
 
   // =========================
   // RECEIVE DATA
   // =========================
-  function receiveData(data, conn) {
-    if (!data || !data.type) return;
+  function receiveData(
+    data,
+    conn
+  ) {
+    if (
+      !data ||
+      !data.type
+    ) {
+      return;
+    }
 
-    console.log("DATA:", data.type, data);
+    console.log(
+      "RECEIVED:",
+      data.type
+    );
 
-    // -------------------------
-    // HOST RECEIVES HELLO
-    // -------------------------
-    if (data.type === "hello" && isHost) {
-      if (Object.keys(players).length >= MAX_PLAYERS) {
+    // PLAYER JOINED
+    if (
+      data.type === "hello" &&
+      isHost
+    ) {
+      if (
+        Object.keys(players).length >=
+        MAX_PLAYERS
+      ) {
         conn.send({
           type: "full"
         });
@@ -324,155 +528,165 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      const id = data.id || conn.peer;
+      const player =
+        createPlayer(
+          conn.peer,
+          data.name ||
+            "PLAYER",
+          false
+        );
 
-      players[id] = createPlayer(
-        id,
-        data.name || "PLAYER"
+      players[conn.peer] =
+        player;
+
+      console.log(
+        "PLAYER ADDED:",
+        player
       );
-
-      connections[id] = conn;
 
       conn.send({
-        type: "lobby",
-        players
+        type: "state",
+        players,
+        code: room
       });
 
-      broadcast({
-        type: "lobby",
-        players
-      });
+      broadcastState();
 
       renderLobby();
 
-      lobbyStatus.textContent =
-        `${Object.keys(players).length} player(s) connected`;
-
-      console.log("PLAYER ADDED:", players[id]);
+      lobbyHint.textContent =
+        "Player joined. Ready!";
     }
 
-    // -------------------------
-    // CLIENT RECEIVES LOBBY
-    // -------------------------
-    if (data.type === "lobby" && !isHost) {
-      players = data.players || {};
+    // STATE
+    if (
+      data.type === "state" &&
+      !isHost
+    ) {
+      players =
+        data.players || {};
+
+      room =
+        data.code || room;
+
+      roomCode.textContent =
+        room;
 
       renderLobby();
 
-      lobbyStatus.textContent = "Waiting for host...";
+      if (
+        game.classList.contains(
+          "active"
+        )
+      ) {
+        renderGame();
+      }
     }
 
-    // -------------------------
-    // HOST READY
-    // -------------------------
-    if (data.type === "host-ready" && !isHost) {
-      players = data.players || {};
-
-      renderLobby();
-    }
-
-    // -------------------------
-    // ROOM FULL
-    // -------------------------
-    if (data.type === "full") {
-      showError("This room is full.");
-    }
-
-    // -------------------------
-    // NAME CHANGE
-    // -------------------------
-    if (data.type === "name") {
-      if (players[data.id]) {
-        players[data.id].name = data.name;
+    // NAME
+    if (
+      data.type === "name" &&
+      isHost
+    ) {
+      if (
+        players[conn.peer]
+      ) {
+        players[
+          conn.peer
+        ].name =
+          data.name;
       }
 
+      broadcastState();
+
       renderLobby();
     }
 
-    // -------------------------
-    // GAME START
-    // -------------------------
-    if (data.type === "start") {
-      players = data.players || {};
-      hazards = data.hazards || [];
-      round = data.round || 1;
-      timeLeft = GAME_TIME;
+    // START
+    if (
+      data.type === "start" &&
+      !isHost
+    ) {
+      players =
+        data.players || {};
 
-      startGame(false);
+      hazards =
+        data.hazards || [];
+
+      round =
+        data.round || 1;
+
+      startRound(false);
     }
 
-    // -------------------------
     // MOVEMENT
-    // -------------------------
-    if (data.type === "move" && isHost) {
-      const p = players[data.id];
+    if (
+      data.type === "input" &&
+      isHost
+    ) {
+      const p =
+        players[data.id];
 
-      if (!p || !p.alive) return;
-
-      p.x = Math.max(
-        4,
-        Math.min(96, p.x + data.dx)
-      );
-
-      p.y = Math.max(
-        4,
-        Math.min(96, p.y + data.dy)
-      );
-
-      checkHazardForPlayer(p);
-    }
-
-    // -------------------------
-    // STATE SYNC
-    // -------------------------
-    if (data.type === "state" && !isHost) {
-      players = data.players || {};
-      hazards = data.hazards || [];
-
-      if (typeof data.timeLeft === "number") {
-        timeLeft = data.timeLeft;
+      if (
+        !p ||
+        !p.alive
+      ) {
+        return;
       }
 
-      if (typeof data.round === "number") {
-        round = data.round;
-      }
+      p.x =
+        Math.max(
+          3,
+          Math.min(
+            97,
+            p.x + data.dx
+          )
+        );
+
+      p.y =
+        Math.max(
+          5,
+          Math.min(
+            95,
+            p.y + data.dy
+          )
+        );
+
+      checkHazard(p);
+
+      broadcastState();
 
       renderGame();
     }
 
-    // -------------------------
     // RESULT
-    // -------------------------
-    if (data.type === "result") {
-      players = data.players || {};
+    if (
+      data.type === "result" &&
+      !isHost
+    ) {
+      players =
+        data.players || {};
 
-      running = false;
-
-      clearInterval(gameTimer);
-      cancelAnimationFrame(moveLoop);
-
-      finishGame();
+      endRound();
     }
 
-    // -------------------------
     // REMATCH
-    // -------------------------
-    if (data.type === "rematch" && isHost) {
-      startNewRound();
+    if (
+      data.type === "rematch" &&
+      isHost
+    ) {
+      round++;
+
+      startRound(true);
     }
 
-    // -------------------------
-    // HOST LEFT
-    // -------------------------
-    if (data.type === "host-left") {
-      running = false;
-
-      clearInterval(gameTimer);
-      cancelAnimationFrame(moveLoop);
-
-      alert("Host left the game.");
-
-      showScreen(homeScreen);
+    // ROOM FULL
+    if (
+      data.type === "full"
+    ) {
+      alert(
+        "This room is full."
+      );
     }
   }
 
@@ -480,223 +694,306 @@ document.addEventListener("DOMContentLoaded", () => {
   // BROADCAST
   // =========================
   function broadcast(data) {
-    Object.values(connections).forEach((conn) => {
-      if (conn && conn.open) {
-        try {
-          conn.send(data);
-        } catch (err) {
-          console.error("Send error:", err);
+    connections.forEach(
+      (conn) => {
+        if (
+          conn &&
+          conn.open
+        ) {
+          try {
+            conn.send(data);
+          } catch (e) {
+            console.error(e);
+          }
         }
       }
-    });
+    );
   }
 
-  // =========================
-  // STATE BROADCAST
-  // =========================
   function broadcastState() {
     broadcast({
       type: "state",
       players,
-      hazards,
-      timeLeft,
-      round
+      code: room
     });
   }
 
   // =========================
   // NAME
   // =========================
-  function setName() {
-    const name = nameInput.value.trim();
+  setName.addEventListener(
+    "click",
+    () => {
+      const n =
+        (
+          playerName.value.trim() ||
+          "PLAYER"
+        ).slice(0, 14);
 
-    if (!name) {
-      alert("Enter your name.");
-      return;
-    }
+      myName = n;
 
-    myName = name.slice(0, 16);
+      if (players[myId]) {
+        players[myId].name =
+          n;
+      }
 
-    if (!players[myId]) {
-      players[myId] = createPlayer(myId, myName);
-    } else {
-      players[myId].name = myName;
-    }
-
-    if (isHost) {
-      broadcast({
-        type: "name",
-        id: myId,
-        name: myName
-      });
-    } else {
-      const hostConn = Object.values(connections)[0];
-
-      if (hostConn && hostConn.open) {
-        hostConn.send({
+      if (isHost) {
+        broadcastState();
+        renderLobby();
+      } else {
+        broadcast({
           type: "name",
-          id: myId,
-          name: myName
+          name: n
         });
       }
     }
-
-    renderLobby();
-  }
+  );
 
   // =========================
-  // LOBBY RENDER
+  // BUTTONS
   // =========================
-  function renderLobby() {
-    if (!playerList) return;
+  createBtn.addEventListener(
+    "click",
+    createRoom
+  );
 
-    const list = Object.values(players);
+  joinBtn.addEventListener(
+    "click",
+    joinRoom
+  );
 
-    playerCount.textContent =
-      `${list.length} / ${MAX_PLAYERS}`;
-
-    playerList.innerHTML = "";
-
-    list.forEach((player) => {
-      const row = document.createElement("div");
-
-      row.className = "player-row";
-
-      row.innerHTML = `
-        <span class="player-dot"
-          style="background:${player.color}">
-        </span>
-
-        <span class="player-name">
-          ${escapeHTML(player.name)}
-        </span>
-
-        ${
-          player.id === myId
-            ? `<span class="you-label">YOU</span>`
-            : ""
-        }
-
-        ${
-          player.id === Object.keys(players)[0]
-            ? `<span class="host-label">HOST</span>`
-            : ""
-        }
-      `;
-
-      playerList.appendChild(row);
-    });
-
-    if (startBtn) {
-      startBtn.disabled =
-        !isHost || list.length < 2;
-
-      startBtn.style.opacity =
-        startBtn.disabled ? "0.45" : "1";
+  joinCode.addEventListener(
+    "input",
+    () => {
+      joinCode.value =
+        joinCode.value
+          .toUpperCase()
+          .replace(
+            /[^A-Z0-9]/g,
+            ""
+          )
+          .slice(0, 6);
     }
-  }
+  );
 
   // =========================
-  // START BUTTON
+  // COPY
   // =========================
-  startBtn?.addEventListener("click", () => {
-    if (!isHost) return;
+  copyCode.addEventListener(
+    "click",
+    async () => {
+      try {
+        await navigator.clipboard.writeText(
+          room
+        );
 
-    const count = Object.keys(players).length;
+        copyCode.textContent =
+          "COPIED";
 
-    if (count < 2) {
-      alert("At least 2 players are required.");
-      return;
+        setTimeout(() => {
+          copyCode.textContent =
+            "COPY";
+        }, 1200);
+      } catch (e) {
+        prompt(
+          "Copy this room code:",
+          room
+        );
+      }
+    }
+  );
+
+  // =========================
+  // START GAME
+  // =========================
+  startBtn.addEventListener(
+    "click",
+    () => {
+      if (!isHost) return;
+
+      if (
+        Object.keys(players)
+          .length < 2
+      ) {
+        return;
+      }
+
+      round++;
+
+      startRound(true);
+    }
+  );
+
+  // =========================
+  // START ROUND
+  // =========================
+  function startRound(
+    hostStarting
+  ) {
+    if (
+      isHost &&
+      hostStarting
+    ) {
+      Object.values(
+        players
+      ).forEach((p) => {
+        p.alive = true;
+        p.x =
+          Math.random() *
+            80 +
+          10;
+        p.y =
+          Math.random() *
+            70 +
+          15;
+      });
+
+      hazards =
+        createHazards();
+
+      timeLeft = 30;
+
+      broadcast({
+        type: "start",
+        players,
+        round,
+        hazards
+      });
     }
 
-    startNewRound();
-  });
-
-  // =========================
-  // START NEW ROUND
-  // =========================
-  function startNewRound() {
-    if (!isHost) return;
-
-    round++;
-
-    Object.values(players).forEach((p, index) => {
-      p.alive = true;
-      p.x = 15 + ((index * 12) % 70);
-      p.y = 15 + ((index * 17) % 70);
-    });
-
-    createHazards();
-
-    timeLeft = GAME_TIME;
     running = true;
 
-    broadcast({
-      type: "start",
-      players,
-      hazards,
-      round
-    });
+    show(game);
 
-    startGame(true);
+    roundNo.textContent =
+      String(round).padStart(
+        2,
+        "0"
+      );
+
+    if (
+      isHost &&
+      hostStarting
+    ) {
+      runHostLoop();
+    }
+
+    renderGame();
   }
 
   // =========================
   // HAZARDS
   // =========================
   function createHazards() {
-    hazards = [];
+    const list = [];
 
-    for (let i = 0; i < 7; i++) {
-      hazards.push({
-        id: i,
-        type: ["bomb", "wall", "pit"][
-          Math.floor(Math.random() * 3)
-        ],
-        x: 10 + Math.random() * 80,
-        y: 10 + Math.random() * 80,
-        vx: (Math.random() - 0.5) * 0.35,
-        vy: (Math.random() - 0.5) * 0.35
+    for (
+      let i = 0;
+      i < 8;
+      i++
+    ) {
+      list.push({
+        type:
+          i % 3 === 0
+            ? "pit"
+            : i % 3 === 1
+            ? "wall"
+            : "bomb",
+
+        x:
+          Math.random() *
+            88 +
+          6,
+
+        y:
+          Math.random() *
+            84 +
+          8,
+
+        r:
+          i % 3 === 0
+            ? 5
+            : 3
       });
     }
+
+    return list;
   }
 
   // =========================
-  // START GAME
+  // HOST GAME LOOP
   // =========================
-  function startGame(hostStart) {
-    running = true;
-    timeLeft = GAME_TIME;
+  function runHostLoop() {
+    clearInterval(
+      gameTimer
+    );
 
-    showScreen(gameScreen);
+    timeLeft = 30;
 
-    renderGame();
+    gameTimer =
+      setInterval(() => {
+        if (!running) {
+          clearInterval(
+            gameTimer
+          );
 
-    cancelAnimationFrame(moveLoop);
-
-    moveLoop = requestAnimationFrame(gameLoop);
-
-    if (hostStart) {
-      clearInterval(gameTimer);
-
-      gameTimer = setInterval(() => {
-        if (!running) return;
+          return;
+        }
 
         timeLeft -= 0.1;
 
-        moveHazards();
+        timerEl.textContent =
+          Math.max(
+            0,
+            timeLeft
+          ).toFixed(1);
 
-        checkHazards();
+        // MOVE BOMBS
+        hazards.forEach(
+          (h, i) => {
+            if (
+              h.type ===
+              "bomb"
+            ) {
+              h.x +=
+                Math.sin(
+                  Date.now() /
+                    500 +
+                    i
+                ) *
+                0.18;
 
-        const alivePlayers =
-          Object.values(players)
-            .filter((p) => p.alive);
+              h.y +=
+                Math.cos(
+                  Date.now() /
+                    650 +
+                    i
+                ) *
+                0.15;
+            }
+          }
+        );
+
+        Object.values(
+          players
+        ).forEach(
+          checkHazard
+        );
+
+        const alive =
+          Object.values(
+            players
+          ).filter(
+            (p) =>
+              p.alive
+          );
 
         if (
-          alivePlayers.length <= 1 ||
+          alive.length <= 1 ||
           timeLeft <= 0
         ) {
           finishHost();
+
           return;
         }
 
@@ -704,54 +1001,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
         renderGame();
       }, 100);
+  }
+
+  // =========================
+  // HAZARD CHECK
+  // =========================
+  function checkHazard(p) {
+    if (!p.alive) return;
+
+    for (
+      const h of hazards
+    ) {
+      const dx =
+        p.x - h.x;
+
+      const dy =
+        p.y - h.y;
+
+      const distance =
+        Math.sqrt(
+          dx * dx +
+            dy * dy
+        );
+
+      if (
+        distance <
+        h.r + 1.8
+      ) {
+        p.alive = false;
+
+        break;
+      }
     }
-  }
-
-  // =========================
-  // HAZARD MOVEMENT
-  // =========================
-  function moveHazards() {
-    hazards.forEach((h) => {
-      h.x += h.vx;
-      h.y += h.vy;
-
-      if (h.x < 5 || h.x > 95) {
-        h.vx *= -1;
-      }
-
-      if (h.y < 5 || h.y > 95) {
-        h.vy *= -1;
-      }
-    });
-  }
-
-  // =========================
-  // CHECK ALL HAZARDS
-  // =========================
-  function checkHazards() {
-    Object.values(players).forEach((p) => {
-      if (p.alive) {
-        checkHazardForPlayer(p);
-      }
-    });
-  }
-
-  // =========================
-  // CHECK PLAYER HAZARD
-  // =========================
-  function checkHazardForPlayer(player) {
-    hazards.forEach((h) => {
-      const dx = player.x - h.x;
-      const dy = player.y - h.y;
-
-      const distance = Math.sqrt(
-        dx * dx + dy * dy
-      );
-
-      if (distance < 5) {
-        player.alive = false;
-      }
-    });
   }
 
   // =========================
@@ -762,355 +1043,331 @@ document.addEventListener("DOMContentLoaded", () => {
 
     running = false;
 
-    clearInterval(gameTimer);
-    cancelAnimationFrame(moveLoop);
+    clearInterval(
+      gameTimer
+    );
 
-    const alivePlayers =
-      Object.values(players)
-        .filter((p) => p.alive);
+    const alive =
+      Object.values(
+        players
+      ).filter(
+        (p) =>
+          p.alive
+      );
 
-    alivePlayers.forEach((p) => {
-      p.score += 500;
-    });
+    alive.forEach(
+      (p) => {
+        p.score += 500;
+      }
+    );
 
     broadcast({
       type: "result",
       players
     });
 
-    finishGame();
+    endRound();
   }
 
   // =========================
-  // FINISH GAME
+  // END ROUND
   // =========================
-  function finishGame() {
+  function endRound() {
     running = false;
 
-    clearInterval(gameTimer);
-    cancelAnimationFrame(moveLoop);
+    clearInterval(
+      gameTimer
+    );
 
-    const list = Object.values(players);
+    const sorted =
+      Object.values(
+        players
+      ).sort(
+        (a, b) =>
+          b.score -
+          a.score
+      );
 
-    list.sort((a, b) => b.score - a.score);
+    if (
+      sorted.length
+    ) {
+      winnerTitle.textContent =
+        sorted[0].name.toUpperCase() +
+        " WINS";
 
-    const winner =
-      list.find((p) => p.alive) || list[0];
-
-    winnerEl.textContent =
-      winner
-        ? `${winner.name} WINS`
-        : "NO WINNER";
-
-    finalScores.innerHTML = "";
-
-    list.forEach((p) => {
-      const row = document.createElement("div");
-
-      row.className = "score-row";
-
-      row.innerHTML = `
-        <span>
-          <span
-            class="player-dot"
-            style="background:${p.color}">
-          </span>
-
-          ${escapeHTML(p.name)}
-        </span>
-
-        <strong>${p.score}</strong>
-      `;
-
-      finalScores.appendChild(row);
-    });
-
-    showScreen(resultScreen);
-  }
-
-  // =========================
-  // GAME LOOP
-  // =========================
-  function gameLoop() {
-    if (!running) return;
-
-    const me = players[myId];
-
-    if (me && me.alive) {
-      let dx = 0;
-      let dy = 0;
-
-      const speed = 0.8;
-
-      if (keys.w) dy -= speed;
-      if (keys.s) dy += speed;
-      if (keys.a) dx -= speed;
-      if (keys.d) dx += speed;
-
-      if (dx !== 0 || dy !== 0) {
-        if (isHost) {
-          me.x = Math.max(
-            4,
-            Math.min(96, me.x + dx)
-          );
-
-          me.y = Math.max(
-            4,
-            Math.min(96, me.y + dy)
-          );
-
-          checkHazardForPlayer(me);
-        } else {
-          const hostConn =
-            Object.values(connections)[0];
-
-          if (hostConn && hostConn.open) {
-            hostConn.send({
-              type: "move",
-              id: myId,
-              dx,
-              dy
-            });
-          }
-
-          me.x = Math.max(
-            4,
-            Math.min(96, me.x + dx)
-          );
-
-          me.y = Math.max(
-            4,
-            Math.min(96, me.y + dy)
-          );
-        }
-      }
+      winnerSub.textContent =
+        sorted[0].alive
+          ? "They survived the arena."
+          : "Highest score takes it.";
     }
 
-    renderGame();
+    finalScores.innerHTML =
+      sorted
+        .map(
+          (p, i) => `
+          <div class="score">
+            <span>
+              ${i + 1}.
+              ${escapeHTML(
+                p.name
+              )}
+            </span>
+            <b>
+              ${p.score}
+            </b>
+          </div>
+        `
+        )
+        .join("");
 
-    moveLoop =
-      requestAnimationFrame(gameLoop);
+    show(result);
   }
 
   // =========================
-  // RENDER GAME
+  // GAME RENDER
   // =========================
   function renderGame() {
-    if (!arena) return;
+    playersEl.innerHTML =
+      Object.values(
+        players
+      )
+        .map(
+          (p) => `
+          <div
+            class="player-dot
+              ${p.id === myId ? "me" : ""}
+              ${p.alive ? "" : "dead"}"
+            style="
+              left:${p.x}%;
+              top:${p.y}%;
+            "
+            title="${escapeHTML(
+              p.name
+            )}"
+          ></div>
+        `
+        )
+        .join("");
 
-    roundEl.textContent = round;
+    hazardsEl.innerHTML =
+      hazards
+        .map(
+          (h) => `
+          <div
+            class="hazard ${h.type}"
+            style="
+              left:${h.x}%;
+              top:${h.y}%;
+            "
+          ></div>
+        `
+        )
+        .join("");
+
+    aliveCount.textContent =
+      Object.values(
+        players
+      ).filter(
+        (p) =>
+          p.alive
+      ).length;
+
+    roundNo.textContent =
+      String(round).padStart(
+        2,
+        "0"
+      );
 
     timerEl.textContent =
-      Math.max(0, timeLeft).toFixed(1);
-
-    const aliveCount =
-      Object.values(players)
-        .filter((p) => p.alive).length;
-
-    aliveEl.textContent = aliveCount;
-
-    arena.innerHTML = "";
-
-    // HAZARDS
-    hazards.forEach((h) => {
-      const el = document.createElement("div");
-
-      el.className = `hazard ${h.type}`;
-
-      el.style.left = `${h.x}%`;
-      el.style.top = `${h.y}%`;
-
-      arena.appendChild(el);
-    });
-
-    // PLAYERS
-    Object.values(players).forEach((p) => {
-      const el = document.createElement("div");
-
-      el.className =
-        `player ${p.alive ? "" : "dead"}`;
-
-      el.style.left = `${p.x}%`;
-      el.style.top = `${p.y}%`;
-
-      el.style.background = p.color;
-
-      el.title = p.name;
-
-      arena.appendChild(el);
-    });
+      Math.max(
+        0,
+        timeLeft
+      ).toFixed(1);
   }
 
   // =========================
-  // KEYBOARD
+  // MOVEMENT
   // =========================
-  window.addEventListener("keydown", (e) => {
-    const key = e.key.toLowerCase();
+  document.addEventListener(
+    "keydown",
+    (e) => {
+      const k =
+        e.key.toLowerCase();
 
-    if (key === "w") keys.w = true;
-    if (key === "a") keys.a = true;
-    if (key === "s") keys.s = true;
-    if (key === "d") keys.d = true;
-  });
-
-  window.addEventListener("keyup", (e) => {
-    const key = e.key.toLowerCase();
-
-    if (key === "w") keys.w = false;
-    if (key === "a") keys.a = false;
-    if (key === "s") keys.s = false;
-    if (key === "d") keys.d = false;
-  });
-
-  // =========================
-  // COPY ROOM
-  // =========================
-  copyBtn?.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(room);
-
-      copyBtn.textContent = "COPIED";
-
-      setTimeout(() => {
-        copyBtn.textContent = "COPY";
-      }, 1200);
-    } catch (err) {
-      alert(room);
+      if (
+        Object.prototype.hasOwnProperty.call(
+          keys,
+          k
+        )
+      ) {
+        keys[k] = true;
+        e.preventDefault();
+      }
     }
-  });
+  );
+
+  document.addEventListener(
+    "keyup",
+    (e) => {
+      const k =
+        e.key.toLowerCase();
+
+      if (
+        Object.prototype.hasOwnProperty.call(
+          keys,
+          k
+        )
+      ) {
+        keys[k] = false;
+      }
+    }
+  );
+
+  setInterval(() => {
+    if (
+      !running ||
+      !game.classList.contains(
+        "active"
+      )
+    ) {
+      return;
+    }
+
+    let dx = 0;
+    let dy = 0;
+
+    if (keys.w) dy -= 1;
+    if (keys.s) dy += 1;
+    if (keys.a) dx -= 1;
+    if (keys.d) dx += 1;
+
+    if (
+      dx === 0 &&
+      dy === 0
+    ) {
+      return;
+    }
+
+    const speed = 0.9;
+
+    const me =
+      players[myId];
+
+    if (!me || !me.alive) {
+      return;
+    }
+
+    if (isHost) {
+      me.x =
+        Math.max(
+          3,
+          Math.min(
+            97,
+            me.x +
+              dx *
+                speed
+          )
+        );
+
+      me.y =
+        Math.max(
+          5,
+          Math.min(
+            95,
+            me.y +
+              dy *
+                speed
+          )
+        );
+
+      checkHazard(me);
+
+      renderGame();
+    } else {
+      const conn =
+        connections.values()
+          .next().value;
+
+      if (
+        conn &&
+        conn.open
+      ) {
+        conn.send({
+          type: "input",
+          id: myId,
+          dx:
+            dx * speed,
+          dy:
+            dy * speed
+        });
+      }
+    }
+  }, 45);
 
   // =========================
   // REMATCH
   // =========================
-  rematchBtn?.addEventListener("click", () => {
-    if (isHost) {
-      startNewRound();
-    } else {
-      const hostConn =
-        Object.values(connections)[0];
+  rematchBtn.addEventListener(
+    "click",
+    () => {
+      if (isHost) {
+        round++;
 
-      if (hostConn && hostConn.open) {
-        hostConn.send({
+        startRound(true);
+      } else {
+        broadcast({
           type: "rematch"
         });
 
-        rematchBtn.disabled = true;
-        rematchBtn.textContent = "WAITING...";
-      }
-    }
-  });
+        rematchBtn.disabled =
+          true;
 
-  // =========================
-  // MAIN MENU
-  // =========================
-  menuBtn?.addEventListener("click", () => {
-    running = false;
-
-    clearInterval(gameTimer);
-    cancelAnimationFrame(moveLoop);
-
-    if (peer) {
-      try {
-        peer.destroy();
-      } catch (e) {}
-    }
-
-    peer = null;
-    players = {};
-    connections = {};
-    hazards = [];
-
-    showScreen(homeScreen);
-  });
-
-  // =========================
-  // CREATE / JOIN BUTTONS
-  // =========================
-  createRoomBtn?.addEventListener(
-    "click",
-    createRoom
-  );
-
-  joinRoomBtn?.addEventListener(
-    "click",
-    joinRoom
-  );
-
-  setNameBtn?.addEventListener(
-    "click",
-    setName
-  );
-
-  roomInput?.addEventListener(
-    "keydown",
-    (e) => {
-      if (e.key === "Enter") {
-        joinRoom();
-      }
-    }
-  );
-
-  nameInput?.addEventListener(
-    "keydown",
-    (e) => {
-      if (e.key === "Enter") {
-        setName();
+        rematchBtn.textContent =
+          "WAITING FOR HOST...";
       }
     }
   );
 
   // =========================
-  // COLORS
+  // LEAVE
   // =========================
-  function getPlayerColor(id) {
-    const colors = [
-      "#4DB8FF",
-      "#FF4D6D",
-      "#A7FF3D",
-      "#FFB84D",
-      "#C77DFF",
-      "#4DFFB8",
-      "#FFFFFF",
-      "#FF6BFF"
-    ];
-
-    let hash = 0;
-
-    for (let i = 0; i < id.length; i++) {
-      hash =
-        (hash << 5) -
-        hash +
-        id.charCodeAt(i);
-
-      hash |= 0;
+  leaveGame.addEventListener(
+    "click",
+    () => {
+      location.reload();
     }
+  );
 
-    return colors[
-      Math.abs(hash) % colors.length
-    ];
-  }
+  homeBtn.addEventListener(
+    "click",
+    () => {
+      location.reload();
+    }
+  );
 
   // =========================
   // ESCAPE HTML
   // =========================
   function escapeHTML(str) {
-    return String(str)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+    return String(str).replace(
+      /[&<>"']/g,
+      (m) =>
+        ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;"
+        }[m])
+    );
   }
 
   // =========================
   // INITIAL
   // =========================
-  showScreen(homeScreen);
+  renderLobby();
 
   console.log(
-    "%c LAST//ALIVE ",
-    "background:#111;color:#A7FF3D;font-size:20px;padding:8px"
+    "LAST//ALIVE multiplayer loaded."
   );
-
-  console.log("Multiplayer system ready.");
 });
