@@ -1,79 +1,31 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HISAAB — Shop Khata</title>
-<link rel="stylesheet" href="style.css">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HISAAB — Shop Khata</title><link rel="stylesheet" href="style.css">
 </head>
-<body>
-<div class="app">
-<header>
-  <div class="brand"><span class="mark">H</span><div><b>HISAAB</b><small>SHOP KHATA</small></div></div>
-  <div class="secure"><span></span> SECURE</div>
-</header>
-
+<body><div class="app">
+<header><div class="brand"><span class="mark">H</span><div><b>HISAAB</b><small>SHOP KHATA</small></div></div><div class="secure"><span></span> SECURE</div></header>
 <main>
 <section id="auth" class="screen active">
-  <div class="auth-copy">
-    <p class="eyebrow">DIGITAL KHATA FOR MODERN SHOPS</p>
-    <h1>Hisab clear.<br><em>Business clear.</em></h1>
-    <p>Track sales, customer credit, payments and daily cash — without the messy notebook.</p>
-    <div class="trust"><span>✓</span> Private shop data &nbsp; <span>✓</span> Mobile first &nbsp; <span>✓</span> Gujarati / Hindi / English</div>
-  </div>
-  <div class="auth-card">
-    <div class="tabs">
-      <button type="button" class="tab active" data-mode="login">LOGIN</button>
-      <button type="button" class="tab" data-mode="signup">CREATE ACCOUNT</button>
-    </div>
-    <div id="authForm">
-      <label>Email</label><input id="email" type="email" placeholder="you@shop.com" autocomplete="email">
-      <label>Password</label><input id="password" type="password" placeholder="••••••••" autocomplete="current-password">
-      <button type="button" id="authBtn" class="primary">LOGIN <span>→</span></button>
-      <button type="button" id="googleBtn" class="ghost">Continue with Google</button>
-      <p id="authMsg" class="msg"></p>
-    </div>
-  </div>
+<div class="auth-copy"><p class="eyebrow">DIGITAL KHATA FOR MODERN SHOPS</p><h1>Hisab clear.<br><em>Business clear.</em></h1><p>Track sales, customer credit, payments and daily cash — without the messy notebook.</p><div class="trust"><span>✓</span> Private shop data &nbsp; <span>✓</span> Mobile first &nbsp; <span>✓</span> Gujarati / Hindi / English</div></div>
+<div class="auth-card"><div class="tabs"><button type="button" class="tab active" data-mode="login">LOGIN</button><button type="button" class="tab" data-mode="signup">CREATE ACCOUNT</button></div>
+<label>Email</label><input id="email" type="email" placeholder="you@shop.com" autocomplete="email"><label>Password</label><input id="password" type="password" placeholder="••••••••" autocomplete="current-password">
+<button type="button" id="authBtn" class="primary">LOGIN <span>→</span></button><button type="button" id="googleBtn" class="ghost">Continue with Google</button><p id="authMsg" class="msg"></p></div>
 </section>
 
-<section id="onboarding" class="screen">
- <div class="setup-card">
-   <p class="eyebrow">ONE-TIME SETUP</p><h2>Set up your shop.</h2>
-   <p class="muted">Tell HISAAB a few basics. You can change them later.</p>
-   <label>Shop name</label><input id="shopName" placeholder="Shree Ganesh General Store">
-   <label>Owner name</label><input id="ownerName" placeholder="Your name">
-   <label>Phone</label><input id="shopPhone" placeholder="+91 98765 43210">
-   <button type="button" id="finishSetup" class="primary">OPEN MY HISAAB →</button>
-   <p id="setupMsg" class="msg"></p>
- </div>
-</section>
+<section id="onboarding" class="screen"><div class="setup-card"><p class="eyebrow">ONE-TIME SETUP</p><h2>Set up your shop.</h2><p class="muted">Tell HISAAB a few basics. You can change them later.</p><label>Shop name</label><input id="shopName" placeholder="Shree Ganesh General Store"><label>Owner name</label><input id="ownerName" placeholder="Your name"><label>Phone</label><input id="shopPhone" placeholder="+91 98765 43210"><button type="button" id="finishSetup" class="primary">OPEN MY HISAAB →</button><p id="setupMsg" class="msg"></p></div></section>
 
 <section id="dashboard" class="screen dashboard">
- <div class="dash-head"><div><p class="eyebrow">TODAY</p><h2 id="welcome">Good morning.</h2><p class="muted" id="shopLabel">Your shop</p></div><button type="button" id="logout" class="ghost">LOG OUT</button></div>
- <div class="stats">
-  <article><span>SALES</span><strong id="sales">₹0</strong><small>Today</small></article>
-  <article><span>RECEIVED</span><strong id="received">₹0</strong><small>Cash + UPI</small></article>
-  <article class="warning"><span>PENDING KHATA</span><strong id="pending">₹0</strong><small>Customer credit</small></article>
-  <article><span>EXPENSES</span><strong id="expenses">₹0</strong><small>Today</small></article>
- </div>
- <div class="quick">
-  <button type="button" class="quick-btn" data-open="sale"><b>＋</b><span>Quick Sale</span><small>Record payment</small></button>
-  <button type="button" class="quick-btn" data-open="customer"><b>＋</b><span>Add Customer</span><small>Open a khata</small></button>
-  <button type="button" class="quick-btn" data-open="expense"><b>−</b><span>Add Expense</span><small>Track spending</small></button>
-  <button type="button" class="quick-btn" data-open="reports"><b>▦</b><span>Reports</span><small>See performance</small></button>
- </div>
- <div class="grid">
-   <div class="panel"><div class="panel-head"><div><b>RECENT TRANSACTIONS</b><small>Latest activity</small></div><button type="button" class="link" data-open="sale">+ Add</button></div><div id="transactions" class="empty">No transactions yet.<br><small>Your first sale will appear here.</small></div></div>
-   <div class="panel"><div class="panel-head"><div><b>CUSTOMER KHATA</b><small>Money to collect</small></div><button type="button" class="link" data-open="customer">+ Customer</button></div><div id="customers" class="empty">No customers added yet.</div></div>
- </div>
-</section>
-</main>
-
-<div id="modal" class="modal"><div class="modal-card"><button type="button" id="closeModal" class="close">×</button><p class="eyebrow" id="modalEyebrow">QUICK ENTRY</p><h3 id="modalTitle">New entry</h3><div id="modalBody"></div></div></div>
-<footer>HISAAB · SIMPLE SHOP ACCOUNTING · YOUR DATA, YOUR SHOP</footer>
+<div class="dash-head"><div><p class="eyebrow">TODAY</p><h2 id="welcome">Good morning.</h2><p class="muted" id="shopLabel">Your shop</p></div><div class="head-actions"><button type="button" class="ghost" id="exportData">EXPORT</button><button type="button" class="ghost" id="refreshData">REFRESH</button><button type="button" id="logout" class="ghost">LOG OUT</button></div></div>
+<div class="stats"><article><span>SALES</span><strong id="sales">₹0</strong><small>Today</small></article><article><span>RECEIVED</span><strong id="received">₹0</strong><small>Cash + UPI</small></article><article class="warning"><span>PENDING KHATA</span><strong id="pending">₹0</strong><small>Customer credit</small></article><article><span>EXPENSES</span><strong id="expenses">₹0</strong><small>Today</small></article><article><span>NET CASH</span><strong id="netCash">₹0</strong><small>Received − expenses</small></article><article><span>CUSTOMERS</span><strong id="customerCount">0</strong><small>Active khatas</small></article></div>
+<div class="quick"><button type="button" class="quick-btn" data-open="sale"><b>＋</b><span>Quick Sale</span><small>Cash / UPI / Credit</small></button><button type="button" class="quick-btn" data-open="customer"><b>＋</b><span>Add Customer</span><small>Open a khata</small></button><button type="button" class="quick-btn" data-open="expense"><b>−</b><span>Add Expense</span><small>Track spending</small></button><button type="button" class="quick-btn" data-open="reports"><b>▦</b><span>Reports</span><small>Business snapshot</small></button></div>
+<div class="grid">
+<div class="panel"><div class="panel-head"><div><b>RECENT TRANSACTIONS</b><small>Latest sales</small></div><button type="button" class="link" data-open="sale">+ Add</button></div><div id="transactions" class="empty">No transactions yet.</div></div>
+<div class="panel"><div class="panel-head"><div><b>CUSTOMER KHATA</b><small>Search, collect & remind</small></div><button type="button" class="link" data-open="customer">+ Customer</button></div><input id="customerSearch" class="panel-search" placeholder="Search customer or phone…"><div id="customers" class="empty">No customers added yet.</div></div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="script.js"></script>
-</body>
-</html>
+</section></main>
+<div id="modal" class="modal"><div class="modal-card"><button type="button" id="closeModal" class="close">×</button><p class="eyebrow" id="modalEyebrow">QUICK ENTRY</p><h3 id="modalTitle">New entry</h3><div id="modalBody"></div></div></div>
+<footer>HISAAB · SIMPLE SHOP ACCOUNTING · YOUR DATA, YOUR SHOP</footer></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><script src="script.js"></script>
+</body></html>
