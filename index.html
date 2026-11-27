@@ -24,8 +24,8 @@
   <div class="auth-card">
     <div class="tabs"><button class="tab active" data-mode="login">LOGIN</button><button class="tab" data-mode="signup">CREATE ACCOUNT</button></div>
     <div id="authForm">
-      <label>Email</label><input id="email" type="email" placeholder="you@shop.com">
-      <label>Password</label><input id="password" type="password" placeholder="••••••••">
+      <label>Email</label><input id="email" type="email" placeholder="you@shop.com" autocomplete="email">
+      <label>Password</label><input id="password" type="password" placeholder="••••••••" autocomplete="current-password">
       <button id="authBtn" class="primary">LOGIN <span>→</span></button>
       <button id="googleBtn" class="ghost">Continue with Google</button>
       <p id="authMsg" class="msg"></p>
@@ -69,6 +69,7 @@
 <div id="modal" class="modal"><div class="modal-card"><button id="closeModal" class="close">×</button><p class="eyebrow" id="modalEyebrow">QUICK ENTRY</p><h3 id="modalTitle">New entry</h3><div id="modalBody"></div></div></div>
 <footer>HISAAB · SIMPLE SHOP ACCOUNTING · YOUR DATA, YOUR SHOP</footer>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="script.js"></script>
 </body>
 </html>
