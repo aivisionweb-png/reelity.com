@@ -2,30 +2,111 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HISAAB — Shop Khata</title><link rel="stylesheet" href="style.css">
+<title>STOCKFLOW — Super Stockist OS</title>
+<link rel="stylesheet" href="style.css">
 </head>
-<body><div class="app">
-<header><div class="brand"><span class="mark">H</span><div><b>HISAAB</b><small>SHOP KHATA</small></div></div><div class="secure"><span></span> SECURE</div></header>
-<main>
-<section id="auth" class="screen active">
-<div class="auth-copy"><p class="eyebrow">DIGITAL KHATA FOR MODERN SHOPS</p><h1>Hisab clear.<br><em>Business clear.</em></h1><p>Track sales, customer credit, payments and daily cash — without the messy notebook.</p><div class="trust"><span>✓</span> Private shop data &nbsp; <span>✓</span> Mobile first &nbsp; <span>✓</span> Gujarati / Hindi / English</div></div>
-<div class="auth-card"><div class="tabs"><button type="button" class="tab active" data-mode="login">LOGIN</button><button type="button" class="tab" data-mode="signup">CREATE ACCOUNT</button></div>
-<label>Email</label><input id="email" type="email" placeholder="you@shop.com" autocomplete="email"><label>Password</label><input id="password" type="password" placeholder="••••••••" autocomplete="current-password">
-<button type="button" id="authBtn" class="primary">LOGIN <span>→</span></button><button type="button" id="googleBtn" class="ghost">Continue with Google</button><p id="authMsg" class="msg"></p></div>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brand"><div class="brand-mark">S</div><div><b>STOCKFLOW</b><small>SUPER STOCKIST OS</small></div></div>
+  <div class="top-right"><span class="status"><i></i> LIVE</span><span class="date" id="today"></span><button class="avatar">KS</button></div>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="shop"><span class="shop-icon">KS</span><div><b>KS Enterprise</b><small>Super Stockist</small></div></div>
+  <nav>
+    <button class="nav active" data-page="overview"><span>01</span>Overview</button>
+    <button class="nav" data-page="orders"><span>02</span>Orders</button>
+    <button class="nav" data-page="stock"><span>03</span>Stock</button>
+    <button class="nav" data-page="network"><span>04</span>Distributors</button>
+    <button class="nav" data-page="collections"><span>05</span>Collections</button>
+    <button class="nav" data-page="reports"><span>06</span>Reports</button>
+  </nav>
+  <div class="side-bottom"><div class="target-mini"><small>MONTHLY TARGET</small><strong>73.7%</strong><div class="bar"><i style="width:73.7%"></i></div><span>₹18.42L / ₹25L</span></div><button class="settings">Settings</button></div>
+</aside>
+<main class="content">
+<section class="page active" id="overview">
+  <div class="page-head"><div><p class="kicker">CONTROL CENTER</p><h1>Good morning.</h1><p>Here’s what needs attention across KS Enterprise today.</p></div><button class="primary" data-modal="order">+ NEW ORDER</button></div>
+  <div class="metric-grid">
+    <article class="metric"><small>PRIMARY SALES</small><strong>₹1,24,500</strong><span class="up">↑ 12.4%</span><em>vs yesterday</em></article>
+    <article class="metric"><small>COLLECTIONS</small><strong>₹82,000</strong><span class="up">↑ 8.1%</span><em>today</em></article>
+    <article class="metric warn"><small>OUTSTANDING</small><strong>₹4,75,000</strong><span class="neutral">18 accounts</span><em>needs collection</em></article>
+    <article class="metric"><small>STOCK VALUE</small><strong>₹28.4L</strong><span class="neutral">146 SKUs</span><em>at current cost</em></article>
+  </div>
+  <div class="alert-strip"><span>ATTENTION</span><b>5 SKUs are below reorder level</b><button data-page="stock">Review stock →</button></div>
+  <div class="two-col">
+    <div class="panel"><div class="panel-head"><div><b>ORDER PIPELINE</b><small>Today · 24 orders</small></div><button class="text-btn" data-page="orders">View all →</button></div>
+      <div class="pipeline"><div><strong>08</strong><span>NEW</span></div><div><strong>06</strong><span>CONFIRMED</span></div><div><strong>05</strong><span>PACKING</span></div><div><strong>03</strong><span>DISPATCHED</span></div><div><strong>02</strong><span>DELIVERED</span></div></div>
+      <div class="mini-table">
+        <div class="row head"><span>ORDER</span><span>DISTRIBUTOR</span><span>VALUE</span><span>STATUS</span></div>
+        <div class="row"><b>#1048</b><span>Patel Distributors</span><span>₹38,400</span><mark>NEW</mark></div>
+        <div class="row"><b>#1047</b><span>Shreeji Agency</span><span>₹22,750</span><mark class="blue">PACKING</mark></div>
+        <div class="row"><b>#1046</b><span>Rajkot Trade</span><span>₹61,200</span><mark class="green">DISPATCHED</mark></div>
+        <div class="row"><b>#1045</b><span>Maruti Sales</span><span>₹18,950</span><mark class="green">DELIVERED</mark></div>
+      </div>
+    </div>
+    <div class="panel"><div class="panel-head"><div><b>COLLECTIONS DUE</b><small>Highest outstanding first</small></div><button class="text-btn" data-page="collections">Open →</button></div>
+      <div class="collection-list">
+        <div><div><b>Patel Distributors</b><small>Due 4 days · ₹1,42,000 limit ₹2L</small></div><strong>₹86,400</strong></div>
+        <div><div><b>Shreeji Agency</b><small>Due 8 days · ₹1L limit</small></div><strong>₹64,200</strong></div>
+        <div><div><b>Rajkot Trade</b><small>Due today · ₹3L limit</small></div><strong>₹48,750</strong></div>
+        <div><div><b>Maruti Sales</b><small>Due tomorrow · ₹1.5L limit</small></div><strong>₹31,600</strong></div>
+      </div>
+    </div>
+  </div>
+  <div class="three-col">
+    <div class="panel compact"><div class="panel-head"><div><b>FAST MOVERS</b><small>Last 7 days</small></div></div><div class="rank"><span>01</span><b>Product A</b><strong>482 cs</strong></div><div class="rank"><span>02</span><b>Product B</b><strong>361 cs</strong></div><div class="rank"><span>03</span><b>Product C</b><strong>294 cs</strong></div></div>
+    <div class="panel compact"><div class="panel-head"><div><b>LOW STOCK</b><small>Reorder required</small></div></div><div class="stock-line"><b>Product D</b><span>12 / 50</span><i></i></div><div class="stock-line"><b>Product E</b><span>18 / 40</span><i></i></div><div class="stock-line"><b>Product F</b><span>7 / 25</span><i></i></div></div>
+    <div class="panel compact"><div class="panel-head"><div><b>TARGET</b><small>November 2026</small></div></div><div class="target-big"><strong>73.7%</strong><span>₹18,42,500 achieved</span></div><div class="bar big"><i style="width:73.7%"></i></div><small class="muted">₹6,57,500 remaining</small></div>
+  </div>
 </section>
 
-<section id="onboarding" class="screen"><div class="setup-card"><p class="eyebrow">ONE-TIME SETUP</p><h2>Set up your shop.</h2><p class="muted">Tell HISAAB a few basics. You can change them later.</p><label>Shop name</label><input id="shopName" placeholder="Shree Ganesh General Store"><label>Owner name</label><input id="ownerName" placeholder="Your name"><label>Phone</label><input id="shopPhone" placeholder="+91 98765 43210"><button type="button" id="finishSetup" class="primary">OPEN MY HISAAB →</button><p id="setupMsg" class="msg"></p></div></section>
+<section class="page" id="orders"><div class="page-head"><div><p class="kicker">ORDER DESK</p><h1>Orders</h1><p>Move every order from request to delivery.</p></div><button class="primary" data-modal="order">+ NEW ORDER</button></div>
+<div class="toolbar"><input id="orderSearch" placeholder="Search order or distributor…"><select><option>All statuses</option><option>New</option><option>Confirmed</option><option>Packing</option><option>Dispatched</option><option>Delivered</option></select></div>
+<div class="panel table-panel"><div class="table wide"><div class="trow thead"><span>ORDER</span><span>DISTRIBUTOR</span><span>ITEMS</span><span>VALUE</span><span>STATUS</span><span></span></div>
+<div class="trow"><b>#1048</b><span>Patel Distributors</span><span>14 items</span><strong>₹38,400</strong><mark>NEW</mark><button class="dots">•••</button></div>
+<div class="trow"><b>#1047</b><span>Shreeji Agency</span><span>9 items</span><strong>₹22,750</strong><mark class="blue">PACKING</mark><button class="dots">•••</button></div>
+<div class="trow"><b>#1046</b><span>Rajkot Trade</span><span>22 items</span><strong>₹61,200</strong><mark class="green">DISPATCHED</mark><button class="dots">•••</button></div>
+<div class="trow"><b>#1045</b><span>Maruti Sales</span><span>7 items</span><strong>₹18,950</strong><mark class="green">DELIVERED</mark><button class="dots">•••</button></div>
+<div class="trow"><b>#1044</b><span>Om Agency</span><span>11 items</span><strong>₹29,600</strong><mark class="blue">CONFIRMED</mark><button class="dots">•••</button></div></div></div>
+</section>
 
-<section id="dashboard" class="screen dashboard">
-<div class="dash-head"><div><p class="eyebrow">TODAY</p><h2 id="welcome">Good morning.</h2><p class="muted" id="shopLabel">Your shop</p></div><div class="head-actions"><button type="button" class="ghost" id="exportData">EXPORT</button><button type="button" class="ghost" id="refreshData">REFRESH</button><button type="button" id="logout" class="ghost">LOG OUT</button></div></div>
-<div class="stats"><article><span>SALES</span><strong id="sales">₹0</strong><small>Today</small></article><article><span>RECEIVED</span><strong id="received">₹0</strong><small>Cash + UPI</small></article><article class="warning"><span>PENDING KHATA</span><strong id="pending">₹0</strong><small>Customer credit</small></article><article><span>EXPENSES</span><strong id="expenses">₹0</strong><small>Today</small></article><article><span>NET CASH</span><strong id="netCash">₹0</strong><small>Received − expenses</small></article><article><span>CUSTOMERS</span><strong id="customerCount">0</strong><small>Active khatas</small></article></div>
-<div class="quick"><button type="button" class="quick-btn" data-open="sale"><b>＋</b><span>Quick Sale</span><small>Cash / UPI / Credit</small></button><button type="button" class="quick-btn" data-open="customer"><b>＋</b><span>Add Customer</span><small>Open a khata</small></button><button type="button" class="quick-btn" data-open="expense"><b>−</b><span>Add Expense</span><small>Track spending</small></button><button type="button" class="quick-btn" data-open="reports"><b>▦</b><span>Reports</span><small>Business snapshot</small></button></div>
-<div class="grid">
-<div class="panel"><div class="panel-head"><div><b>RECENT TRANSACTIONS</b><small>Latest sales and payments</small></div><button type="button" class="link" data-open="sale">+ Add</button></div><div id="transactions" class="empty">No transactions yet.</div></div>
-<div class="panel"><div class="panel-head"><div><b>CUSTOMER KHATA</b><small>Open ledger, collect & remind</small></div><button type="button" class="link" data-open="customer">+ Customer</button></div><input id="customerSearch" class="panel-search" placeholder="Search customer or phone…"><div id="customers" class="empty">No customers added yet.</div></div>
+<section class="page" id="stock"><div class="page-head"><div><p class="kicker">INVENTORY COMMAND</p><h1>Stock</h1><p>Know what you have, what is moving and what needs ordering.</p></div><button class="primary" data-modal="stock">+ STOCK ENTRY</button></div>
+<div class="metric-grid four"><article class="metric"><small>TOTAL SKUs</small><strong>146</strong><em>across all brands</em></article><article class="metric"><small>STOCK VALUE</small><strong>₹28.4L</strong><em>at current cost</em></article><article class="metric warn"><small>LOW STOCK</small><strong>05</strong><em>reorder now</em></article><article class="metric"><small>INCOMING</small><strong>₹4.8L</strong><em>3 purchase orders</em></article></div>
+<div class="panel table-panel"><div class="panel-head"><div><b>PRODUCT STOCK</b><small>Quantity shown in cases</small></div><input class="small-search" placeholder="Search SKU…"></div>
+<div class="table wide"><div class="trow thead"><span>PRODUCT</span><span>SKU</span><span>ON HAND</span><span>REORDER</span><span>STATUS</span><span>VALUE</span></div>
+<div class="trow"><b>Product A</b><span>SKU-001</span><span>482 cs</span><span>100 cs</span><mark class="green">HEALTHY</mark><strong>₹4.2L</strong></div>
+<div class="trow"><b>Product B</b><span>SKU-002</span><span>361 cs</span><span>80 cs</span><mark class="green">HEALTHY</mark><strong>₹3.7L</strong></div>
+<div class="trow low"><b>Product D</b><span>SKU-004</span><span>12 cs</span><span>50 cs</span><mark>REORDER</mark><strong>₹18,600</strong></div>
+<div class="trow low"><b>Product E</b><span>SKU-005</span><span>18 cs</span><span>40 cs</span><mark>REORDER</mark><strong>₹24,300</strong></div>
+<div class="trow"><b>Product F</b><span>SKU-006</span><span>76 cs</span><span>25 cs</span><mark class="green">HEALTHY</mark><strong>₹91,200</strong></div></div></div>
+</section>
+
+<section class="page" id="network"><div class="page-head"><div><p class="kicker">DISTRIBUTOR NETWORK</p><h1>Distributors</h1><p>One view of every account, territory and credit position.</p></div><button class="primary" data-modal="distributor">+ ADD DISTRIBUTOR</button></div>
+<div class="metric-grid four"><article class="metric"><small>ACTIVE</small><strong>24</strong><em>distributor accounts</em></article><article class="metric"><small>THIS MONTH</small><strong>₹18.42L</strong><em>primary sales</em></article><article class="metric warn"><small>OUTSTANDING</small><strong>₹4.75L</strong><em>18 accounts</em></article><article class="metric"><small>AVG ORDER</small><strong>₹34,820</strong><em>this month</em></article></div>
+<div class="panel table-panel"><div class="table wide"><div class="trow thead"><span>DISTRIBUTOR</span><span>TERRITORY</span><span>MONTH SALES</span><span>OUTSTANDING</span><span>CREDIT</span><span>LAST ORDER</span></div>
+<div class="trow"><b>Patel Distributors</b><span>Ahmedabad</span><strong>₹4.2L</strong><span>₹86,400</span><mark class="blue">₹2L LIMIT</mark><span>Today</span></div>
+<div class="trow"><b>Shreeji Agency</b><span>Mehsana</span><strong>₹3.1L</strong><span>₹64,200</span><mark class="blue">₹1L LIMIT</mark><span>Today</span></div>
+<div class="trow"><b>Rajkot Trade</b><span>Rajkot</span><strong>₹2.8L</strong><span>₹48,750</span><mark class="green">₹3L LIMIT</mark><span>Yesterday</span></div>
+<div class="trow"><b>Maruti Sales</b><span>Gandhinagar</span><strong>₹1.9L</strong><span>₹31,600</span><mark class="blue">₹1.5L LIMIT</mark><span>Yesterday</span></div></div></div>
+</section>
+
+<section class="page" id="collections"><div class="page-head"><div><p class="kicker">CREDIT CONTROL</p><h1>Collections</h1><p>See where money is stuck before it becomes a problem.</p></div><button class="primary" data-modal="payment">+ RECORD PAYMENT</button></div>
+<div class="metric-grid four"><article class="metric warn"><small>TOTAL DUE</small><strong>₹4,75,000</strong><em>18 distributor accounts</em></article><article class="metric"><small>DUE TODAY</small><strong>₹1,14,350</strong><em>6 accounts</em></article><article class="metric"><small>OVERDUE</small><strong>₹72,400</strong><em>4 accounts</em></article><article class="metric"><small>COLLECTED TODAY</small><strong>₹82,000</strong><em>↑ 8.1%</em></article></div>
+<div class="panel table-panel"><div class="table wide"><div class="trow thead"><span>DISTRIBUTOR</span><span>OUTSTANDING</span><span>CREDIT LIMIT</span><span>DUE</span><span>RISK</span><span>ACTION</span></div>
+<div class="trow"><b>Patel Distributors</b><strong>₹86,400</strong><span>₹2,00,000</span><span>4 days</span><mark>WATCH</mark><button class="mini">REMIND</button></div>
+<div class="trow"><b>Shreeji Agency</b><strong>₹64,200</strong><span>₹1,00,000</span><span>8 days</span><mark>HIGH</mark><button class="mini">REMIND</button></div>
+<div class="trow"><b>Rajkot Trade</b><strong>₹48,750</strong><span>₹3,00,000</span><span>Today</span><mark class="green">OK</mark><button class="mini">REMIND</button></div>
+<div class="trow"><b>Maruti Sales</b><strong>₹31,600</strong><span>₹1,50,000</span><span>Tomorrow</span><mark class="green">OK</mark><button class="mini">REMIND</button></div></div></div>
+</section>
+
+<section class="page" id="reports"><div class="page-head"><div><p class="kicker">BUSINESS REPORTS</p><h1>Reports</h1><p>Decision-ready numbers for the principal and the team.</p></div><button class="primary">EXPORT REPORT</button></div>
+<div class="report-grid"><div class="panel report-card"><small>MONTHLY SALES</small><strong>₹18,42,500</strong><div class="fake-chart"><i style="height:34%"></i><i style="height:46%"></i><i style="height:41%"></i><i style="height:62%"></i><i style="height:56%"></i><i style="height:74%"></i><i style="height:88%"></i><i style="height:78%"></i><i style="height:92%"></i></div><span>Target ₹25L · 73.7% achieved</span></div>
+<div class="panel report-card"><small>TOP DISTRIBUTORS</small><div class="report-row"><b>Patel Distributors</b><strong>₹4.2L</strong></div><div class="report-row"><b>Shreeji Agency</b><strong>₹3.1L</strong></div><div class="report-row"><b>Rajkot Trade</b><strong>₹2.8L</strong></div><div class="report-row"><b>Maruti Sales</b><strong>₹1.9L</strong></div></div></div>
+</section>
+</main></div>
+
+<div class="modal" id="modal"><div class="modal-card"><button class="close" id="close">×</button><p class="kicker" id="modalKicker">NEW ENTRY</p><h2 id="modalTitle">Create</h2><div id="modalBody"></div></div></div>
+<script src="script.js"></script>
 </div>
-</section></main>
-<div id="modal" class="modal"><div class="modal-card"><button type="button" id="closeModal" class="close">×</button><p class="eyebrow" id="modalEyebrow">QUICK ENTRY</p><h3 id="modalTitle">New entry</h3><div id="modalBody"></div></div></div>
-<footer>HISAAB · SIMPLE SHOP ACCOUNTING · YOUR DATA, YOUR SHOP</footer></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><script src="script.js"></script>
 </body></html>
