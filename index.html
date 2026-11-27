@@ -1,282 +1,74 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>LAST//ALIVE — Only one makes it out.</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HISAAB — Shop Khata</title>
+<link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-<div id="app">
-
-  <div class="scanlines"></div>
-
-  <header>
-    <div class="logo">LAST<span>//</span>ALIVE</div>
-    <div class="status"><i></i> ONLINE</div>
-  </header>
-
-  <main>
-
-    <!-- HOME -->
-    <section id="home" class="screen active">
-      <div class="hero">
-
-        <p class="eyebrow">MULTIPLAYER SURVIVAL ARENA</p>
-
-        <h1>
-          ONLY ONE<br>
-          <span>MAKES IT OUT.</span>
-        </h1>
-
-        <p class="sub">
-          Dodge. Survive. Betray your friends.
-          Be the last player standing.
-        </p>
-
-        <div class="cards">
-          <div class="card">
-            <b>01</b>
-            <strong>CREATE</strong>
-            <small>Make a private room.</small>
-          </div>
-
-          <div class="card">
-            <b>02</b>
-            <strong>INVITE</strong>
-            <small>Send your room code.</small>
-          </div>
-
-          <div class="card">
-            <b>03</b>
-            <strong>SURVIVE</strong>
-            <small>Last player alive wins.</small>
-          </div>
-        </div>
-
-        <div class="home-actions">
-
-          <button id="createBtn" class="primary">
-            CREATE ROOM <span>→</span>
-          </button>
-
-          <div class="join-row">
-            <input
-              id="joinCode"
-              maxlength="6"
-              placeholder="ROOM CODE"
-              autocomplete="off"
-            >
-
-            <button id="joinBtn">
-              JOIN
-            </button>
-          </div>
-
-        </div>
-
-        <p id="homeError" class="error"></p>
-
-      </div>
-    </section>
-
-
-    <!-- LOBBY -->
-    <section id="lobby" class="screen">
-
-      <div class="panel lobby-panel">
-
-        <div class="topline">
-
-          <div>
-            <p class="eyebrow">PRIVATE ARENA</p>
-            <h2>LOBBY</h2>
-          </div>
-
-          <div class="room-box">
-            <small>ROOM CODE</small>
-
-            <strong id="roomCode">
-              ------
-            </strong>
-
-            <button id="copyCode">
-              COPY
-            </button>
-          </div>
-
-        </div>
-
-
-        <div class="name-row">
-
-          <input
-            id="playerName"
-            maxlength="14"
-            placeholder="YOUR NAME"
-            autocomplete="off"
-          >
-
-          <button id="setName">
-            SET NAME
-          </button>
-
-        </div>
-
-
-        <div class="players-head">
-          <span>PLAYERS</span>
-          <span id="playerCount">1 / 8</span>
-        </div>
-
-
-        <div
-          id="playerList"
-          class="player-list"
-        ></div>
-
-
-        <div class="lobby-bottom">
-
-          <p id="lobbyHint">
-            Share the code with your friends.
-          </p>
-
-          <button
-            id="startBtn"
-            class="primary"
-            disabled
-          >
-            START GAME →
-          </button>
-
-        </div>
-
-        <p id="lobbyError" class="error"></p>
-
-      </div>
-
-    </section>
-
-
-    <!-- GAME -->
-    <section id="game" class="screen">
-
-      <div class="game-hud">
-
-        <div>
-          <span>ROUND</span>
-          <b id="roundNo">01</b>
-        </div>
-
-        <div class="timer">
-          <span>TIME</span>
-          <b id="timer">30.0</b>
-        </div>
-
-        <div>
-          <span>ALIVE</span>
-          <b id="aliveCount">1</b>
-        </div>
-
-      </div>
-
-
-      <div id="arena" class="arena">
-
-        <div class="arena-grid"></div>
-
-        <div id="hazards"></div>
-
-        <div id="players"></div>
-
-        <div
-          class="arena-message"
-          id="arenaMessage"
-        >
-          SURVIVE
-        </div>
-
-      </div>
-
-
-      <div class="controls">
-
-        <div class="keys">
-          <kbd>W</kbd>
-          <kbd>A</kbd>
-          <kbd>S</kbd>
-          <kbd>D</kbd>
-        </div>
-
-        <p>MOVE</p>
-
-        <button id="leaveGame">
-          LEAVE
-        </button>
-
-      </div>
-
-    </section>
-
-
-    <!-- RESULT -->
-    <section id="result" class="screen">
-
-      <div class="result-panel">
-
-        <p class="eyebrow">
-          ROUND COMPLETE
-        </p>
-
-        <h2 id="winnerTitle">
-          PLAYER WINS
-        </h2>
-
-        <p id="winnerSub">
-          Only one made it out.
-        </p>
-
-        <div
-          id="finalScores"
-          class="scores"
-        ></div>
-
-        <div class="result-actions">
-
-          <button
-            id="rematchBtn"
-            class="primary"
-          >
-            REMATCH →
-          </button>
-
-          <button id="homeBtn">
-            MAIN MENU
-          </button>
-
-        </div>
-
-      </div>
-
-    </section>
-
-  </main>
-
-
-  <footer>
-    LAST//ALIVE · WEBRTC MULTIPLAYER · 2–8 PLAYERS
-  </footer>
-
+<div class="app">
+<header>
+  <div class="brand"><span class="mark">H</span><div><b>HISAAB</b><small>SHOP KHATA</small></div></div>
+  <div class="secure"><span></span> SECURE</div>
+</header>
+
+<main>
+<section id="auth" class="screen active">
+  <div class="auth-copy">
+    <p class="eyebrow">DIGITAL KHATA FOR MODERN SHOPS</p>
+    <h1>Hisab clear.<br><em>Business clear.</em></h1>
+    <p>Track sales, customer credit, payments and daily cash — without the messy notebook.</p>
+    <div class="trust"><span>✓</span> Private shop data &nbsp; <span>✓</span> Mobile first &nbsp; <span>✓</span> Gujarati / Hindi / English</div>
+  </div>
+  <div class="auth-card">
+    <div class="tabs"><button class="tab active" data-mode="login">LOGIN</button><button class="tab" data-mode="signup">CREATE ACCOUNT</button></div>
+    <div id="authForm">
+      <label>Email</label><input id="email" type="email" placeholder="you@shop.com">
+      <label>Password</label><input id="password" type="password" placeholder="••••••••">
+      <button id="authBtn" class="primary">LOGIN <span>→</span></button>
+      <button id="googleBtn" class="ghost">Continue with Google</button>
+      <p id="authMsg" class="msg"></p>
+    </div>
+  </div>
+</section>
+
+<section id="onboarding" class="screen">
+ <div class="setup-card">
+   <p class="eyebrow">ONE-TIME SETUP</p><h2>Set up your shop.</h2>
+   <p class="muted">Tell HISAAB a few basics. You can change them later.</p>
+   <label>Shop name</label><input id="shopName" placeholder="Shree Ganesh General Store">
+   <label>Owner name</label><input id="ownerName" placeholder="Your name">
+   <label>Phone</label><input id="shopPhone" placeholder="+91 98765 43210">
+   <button id="finishSetup" class="primary">OPEN MY HISAAB →</button>
+   <p id="setupMsg" class="msg"></p>
+ </div>
+</section>
+
+<section id="dashboard" class="screen dashboard">
+ <div class="dash-head"><div><p class="eyebrow">TODAY</p><h2 id="welcome">Good morning.</h2><p class="muted" id="shopLabel">Your shop</p></div><button id="logout" class="ghost">LOG OUT</button></div>
+ <div class="stats">
+  <article><span>SALES</span><strong id="sales">₹0</strong><small>Today</small></article>
+  <article><span>RECEIVED</span><strong id="received">₹0</strong><small>Cash + UPI</small></article>
+  <article class="warning"><span>PENDING KHATA</span><strong id="pending">₹0</strong><small>Customer credit</small></article>
+  <article><span>EXPENSES</span><strong id="expenses">₹0</strong><small>Today</small></article>
+ </div>
+ <div class="quick">
+  <button class="quick-btn" data-open="sale"><b>＋</b><span>Quick Sale</span><small>Record payment</small></button>
+  <button class="quick-btn" data-open="customer"><b>＋</b><span>Add Customer</span><small>Open a khata</small></button>
+  <button class="quick-btn" data-open="expense"><b>−</b><span>Add Expense</span><small>Track spending</small></button>
+  <button class="quick-btn" data-open="reports"><b>▦</b><span>Reports</span><small>See performance</small></button>
+ </div>
+ <div class="grid">
+   <div class="panel"><div class="panel-head"><div><b>RECENT TRANSACTIONS</b><small>Latest activity</small></div><button class="link" data-open="sale">+ Add</button></div><div id="transactions" class="empty">No transactions yet.<br><small>Your first sale will appear here.</small></div></div>
+   <div class="panel"><div class="panel-head"><div><b>CUSTOMER KHATA</b><small>Money to collect</small></div><button class="link" data-open="customer">+ Customer</button></div><div id="customers" class="empty">No customers added yet.</div></div>
+ </div>
+</section>
+</main>
+
+<div id="modal" class="modal"><div class="modal-card"><button id="closeModal" class="close">×</button><p class="eyebrow" id="modalEyebrow">QUICK ENTRY</p><h3 id="modalTitle">New entry</h3><div id="modalBody"></div></div></div>
+<footer>HISAAB · SIMPLE SHOP ACCOUNTING · YOUR DATA, YOUR SHOP</footer>
 </div>
-
-
-<!-- PEERJS -->
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-
-<!-- GAME -->
 <script src="script.js"></script>
-
 </body>
 </html>
