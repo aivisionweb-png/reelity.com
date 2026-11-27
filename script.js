@@ -29,7 +29,7 @@ function render(){
  const ts=todayOnly(data.sales),te=todayOnly(data.expenses),sales=ts.reduce((a,x)=>a+Number(x.amount||0),0),received=ts.reduce((a,x)=>a+Number(x.received||0),0),pending=data.customers.reduce((a,x)=>a+Number(x.balance||0),0),expenses=te.reduce((a,x)=>a+Number(x.amount||0),0);
  $("shopLabel").textContent=shop?.name||"Your shop";$("sales").textContent=money(sales);$("received").textContent=money(received);$("pending").textContent=money(pending);$("expenses").textContent=money(expenses);$("netCash").textContent=money(received-expenses);$("customerCount").textContent=data.customers.length;
  const h=new Date().getHours();$("welcome").textContent="Good "+(h<12?"morning":h<17?"afternoon":"evening")+".";
- $("transactions").innerHTML=data.sales.length?data.sales.slice(0,8).map(x=>'<div class="transaction"><div><b>'+esc(x.note||"Sale")+'</b><small>'+new Date(x.created_at).toLocaleString("en-IN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})+(x.payment_method?" · "+esc(x.payment_method.toUpperCase()):"")+'</small></div><span class="amount">'+money(x.amount)+'</span></div>').join(""):'<div class="empty">No transactions yet.</div>';
+ $("transactions").innerHTML=data.sales.length?data.sales.slice(0,8).map(x=>{const payment=Number(x.amount||0)===0&&Number(x.received||0)>0;return '<div class="transaction"><div><b>'+esc(x.note||(payment?"Payment received":"Sale"))+'</b><small>'+new Date(x.created_at).toLocaleString("en-IN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})+(x.payment_method?" · "+esc(x.payment_method.toUpperCase()):"")+'</small></div><span class="amount '+(payment?"paid":"")+'">'+(payment?"+"+money(x.received):money(x.amount))+'</span></div>'}).join(""):'<div class="empty">No transactions yet.</div>';
  renderCustomers()
 }
 function renderCustomers(){
@@ -78,18 +78,27 @@ window.addExpense=async()=>{
  const {error}=await supabaseClient.from("expenses").insert({shop_id:shop.id,amount,category:$("mCategory").value,note:$("mNote").value.trim()||null});
  if(error)return alert(error.message);$("modal").classList.remove("open");await loadDashboard()
 };
-window.customerDetails=id=>{const c=data.customers.find(x=>x.id===id);if(!c)return;openCustomerModal(c)};
-function openCustomerModal(c){
- $("modalEyebrow").textContent="CUSTOMER KHATA";$("modalTitle").textContent=c.name;
- $("modalBody").innerHTML='<div class="customer-profile"><div class="big-balance">'+(Number(c.balance)>0?money(c.balance):"CLEAR")+'</div><p>'+esc(c.phone||"No phone added")+'</p><p class="muted">This khata stays saved even when the balance becomes ₹0.</p></div><button class="primary" onclick="receivePayment(\''+c.id+'\')">RECEIVE PAYMENT →</button>'+(c.phone?'<button class="ghost wide" onclick="remindCustomer(\''+c.id+'\')">WHATSAPP REMINDER</button>':"");
+window.customerDetails=async id=>{const c=data.customers.find(x=>x.id===id);if(!c)return;await openCustomerModal(c)};
+async function openCustomerModal(c){
+ const {data:ledger,error}=await supabaseClient.from("sales").select("*").eq("shop_id",shop.id).eq("customer_id",c.id).order("created_at",{ascending:false});
+ if(error)return alert(error.message);
+ $("modalEyebrow").textContent="CUSTOMER LEDGER";$("modalTitle").textContent=c.name;
+ const rows=ledger||[];
+ const totalSales=rows.reduce((a,x)=>a+Number(x.amount||0),0);
+ const totalPaid=rows.reduce((a,x)=>a+Number(x.received||0),0);
+ const history=rows.length?rows.slice(0,12).map(x=>{const payment=Number(x.amount||0)===0&&Number(x.received||0)>0;return '<div class="ledger-row"><div><b>'+esc(x.note||(payment?"Payment received":"Sale"))+'</b><small>'+new Date(x.created_at).toLocaleString("en-IN",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})+'</small></div><strong class="'+(payment?"paid":"debit")+'">'+(payment?"+"+money(x.received):"-"+money(x.amount))+'</strong></div>'}).join(""):'<div class="empty">No ledger entries yet.</div>';
+ $("modalBody").innerHTML='<div class="customer-profile"><div class="big-balance">'+(Number(c.balance)>0?money(c.balance):"CLEAR")+'</div><p>'+esc(c.phone||"No phone added")+'</p><div class="ledger-summary"><span>Sales <b>'+money(totalSales)+'</b></span><span>Paid <b>'+money(totalPaid)+'</b></span><span>Due <b>'+money(c.balance)+'</b></span></div></div><div class="ledger">'+history+'</div><button class="primary" onclick="receivePayment(\''+c.id+'\')">RECEIVE PAYMENT →</button>'+(c.phone?'<button class="ghost wide" onclick="remindCustomer(\''+c.id+'\')">WHATSAPP REMINDER</button>':"");
  $("modal").classList.add("open")
 }
 window.receivePayment=async id=>{
  const c=data.customers.find(x=>x.id===id);if(!c)return;const raw=prompt("Payment received from "+c.name+"\nCurrent due: "+money(c.balance)+"\n\nEnter amount:");
- const amount=Number(raw);if(!amount||amount<=0)return;const next=Math.max(0,Number(c.balance||0)-amount);
- if(amount>Number(c.balance||0))return alert("Payment cannot be greater than current due.");
+ const amount=Number(raw);if(!amount||amount<=0)return;if(amount>Number(c.balance||0))return alert("Payment cannot be greater than current due.");
+ const next=Number(c.balance||0)-amount;
  const {error}=await supabaseClient.from("customers").update({balance:next}).eq("id",id).eq("shop_id",shop.id);
- if(error)return alert(error.message);$("modal").classList.remove("open");await loadDashboard()
+ if(error)return alert(error.message);
+ const {error:pe}=await supabaseClient.from("sales").insert({shop_id:shop.id,customer_id:id,amount:0,received:amount,payment_method:"payment",note:"Payment received"});
+ if(pe)return alert(pe.message);
+ await loadDashboard();const updated=data.customers.find(x=>x.id===id);if(updated)await openCustomerModal(updated)
 };
 window.remindCustomer=id=>{
  const c=data.customers.find(x=>x.id===id);if(!c?.phone)return;
